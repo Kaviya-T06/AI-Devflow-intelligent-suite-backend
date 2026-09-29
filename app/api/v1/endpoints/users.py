@@ -1,24 +1,79 @@
 """
-Users router — real database queries against the `users` table.
+Users router — full CRUD against the `users` table.
+
+All mutating endpoints (POST / PUT / PATCH / DELETE) require a valid JWT
+whose `role` claim equals "admin".  GET endpoints also require a valid JWT
+(any role).
+
+Auth is read from the Bearer token — the frontend cannot spoof roles.
 """
+import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.core.security import hash_password, decode_access_token
 from app.schemas.auth import RoleEnum
-from app.schemas.user import UserOut, UserUpdateRequest
+from app.schemas.user import UserOut, UserCreateRequest, UserUpdateRequest, UserStatusRequest
 from app.db.supabase_client import get_supabase_client
 
+from jose import JWTError
+
 router = APIRouter(prefix="/users", tags=["Users"])
+_bearer = HTTPBearer(auto_error=False)
 
 
 # ---------------------------------------------------------------------------
-# Internal helper
+# Auth helpers
 # ---------------------------------------------------------------------------
 
 def _db():
     return get_supabase_client()
 
+
+def _require_auth(
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+) -> dict:
+    """
+    Decode the JWT and return its payload.
+    Raises 401 if the token is missing or invalid.
+    """
+    if not creds or not creds.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    try:
+        payload = decode_access_token(creds.credentials)
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def _require_admin(
+    payload: dict = Depends(_require_auth),
+) -> dict:
+    """
+    Extend _require_auth to also enforce admin role.
+    Raises 403 if the caller is not an admin.
+    """
+    if payload.get("role") != RoleEnum.ADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required.",
+        )
+    return payload
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
 
 def _row_to_user_out(row: dict) -> UserOut:
     return UserOut(
@@ -27,11 +82,12 @@ def _row_to_user_out(row: dict) -> UserOut:
         email=row["email"],
         role=RoleEnum(row.get("role", "developer")),
         is_active=row.get("is_active", True),
+        created_at=row.get("created_at"),
     )
 
 
 # ---------------------------------------------------------------------------
-# Endpoints
+# GET /users  — list all users (any authenticated role)
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -39,22 +95,22 @@ def _row_to_user_out(row: dict) -> UserOut:
     response_model=List[UserOut],
     summary="List all users",
 )
-async def list_users() -> List[UserOut]:
-    """
-    Retrieve all registered users from the `users` table.
-    Returns id, name, email, role, and is_active for each user.
-    """
+async def list_users(
+    _payload: dict = Depends(_require_auth),
+) -> List[UserOut]:
+    """Retrieve all registered users from the `users` table."""
     try:
         resp = _db().table("users").select(
-            "id, name, email, role, is_active"
-        ).execute()
+            "id, name, email, role, is_active, created_at"
+        ).order("created_at", desc=True).execute()
         return [_row_to_user_out(r) for r in (resp.data or [])]
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch users: {exc}",
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to fetch users: {exc}")
 
+
+# ---------------------------------------------------------------------------
+# GET /users/{user_id}  — single user (any authenticated role)
+# ---------------------------------------------------------------------------
 
 @router.get(
     "/{user_id}",
@@ -63,13 +119,14 @@ async def list_users() -> List[UserOut]:
 )
 async def get_user(
     user_id: str = Path(..., description="The UUID of the user"),
+    _payload: dict = Depends(_require_auth),
 ) -> UserOut:
     """Retrieve a specific user by their UUID."""
     try:
         resp = (
             _db()
             .table("users")
-            .select("id, name, email, role, is_active")
+            .select("id, name, email, role, is_active, created_at")
             .eq("id", user_id)
             .limit(1)
             .execute()
@@ -82,19 +139,109 @@ async def get_user(
     return _row_to_user_out(resp.data[0])
 
 
+# ---------------------------------------------------------------------------
+# POST /users  — create user (admin only)
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "",
+    response_model=UserOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new user (admin only)",
+)
+async def create_user(
+    payload: UserCreateRequest,
+    _admin: dict = Depends(_require_admin),
+) -> UserOut:
+    """
+    Admin creates a user directly.
+    Password is hashed server-side; plain text is never stored.
+    """
+    email = payload.email.lower().strip()
+
+    # Uniqueness check
+    try:
+        existing = (
+            _db()
+            .table("users")
+            .select("id")
+            .eq("email", email)
+            .limit(1)
+            .execute()
+        )
+        if existing.data:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A user with this email already exists.",
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    pw_hash = hash_password(payload.password)
+    user_id = str(uuid.uuid4())
+
+    try:
+        resp = _db().table("users").insert({
+            "id":            user_id,
+            "name":          payload.name.strip(),
+            "email":         email,
+            "password_hash": pw_hash,
+            "role":          payload.role.value,
+            "is_active":     payload.is_active,
+        }).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to create user: {exc}")
+
+    if not resp.data:
+        raise HTTPException(status_code=500, detail="User creation returned no data.")
+
+    return _row_to_user_out(resp.data[0])
+
+
+# ---------------------------------------------------------------------------
+# PUT /users/{user_id}  — full update (admin only, no password change)
+# ---------------------------------------------------------------------------
+
+@router.put(
+    "/{user_id}",
+    response_model=UserOut,
+    summary="Update a user (admin only)",
+)
+async def update_user_put(
+    payload: UserUpdateRequest,
+    user_id: str = Path(..., description="The UUID of the user to update"),
+    _admin: dict = Depends(_require_admin),
+) -> UserOut:
+    """Full update of user fields (name, email, role, is_active). Password not touched."""
+    return await _do_update(user_id, payload)
+
+
+# ---------------------------------------------------------------------------
+# PATCH /users/{user_id}  — partial update (admin only)
+# ---------------------------------------------------------------------------
+
 @router.patch(
     "/{user_id}",
     response_model=UserOut,
-    summary="Update a user's details",
+    summary="Partially update a user (admin only)",
 )
-async def update_user(
+async def update_user_patch(
     payload: UserUpdateRequest,
     user_id: str = Path(..., description="The UUID of the user to update"),
+    _admin: dict = Depends(_require_admin),
 ) -> UserOut:
-    """Partially update a user's name, role, or is_active flag."""
+    """Partially update name, email, role, or is_active."""
+    return await _do_update(user_id, payload)
+
+
+async def _do_update(user_id: str, payload: UserUpdateRequest) -> UserOut:
     updates: dict = {}
     if payload.name is not None:
         updates["name"] = payload.name.strip()
+    if payload.email is not None:
+        updates["email"] = payload.email.lower().strip()
     if payload.role is not None:
         updates["role"] = payload.role.value
     if payload.is_active is not None:
@@ -117,3 +264,72 @@ async def update_user(
     if not resp.data:
         raise HTTPException(status_code=404, detail="User not found.")
     return _row_to_user_out(resp.data[0])
+
+
+# ---------------------------------------------------------------------------
+# PATCH /users/{user_id}/status  — activate / deactivate (admin only)
+# ---------------------------------------------------------------------------
+
+@router.patch(
+    "/{user_id}/status",
+    response_model=UserOut,
+    summary="Activate or deactivate a user (admin only)",
+)
+async def toggle_user_status(
+    body: UserStatusRequest,
+    user_id: str = Path(..., description="The UUID of the user"),
+    admin_payload: dict = Depends(_require_admin),
+) -> UserOut:
+    """
+    Set `is_active` to true or false.
+    An admin cannot deactivate their own account.
+    """
+    if admin_payload.get("sub") == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot change your own account status.",
+        )
+
+    try:
+        resp = (
+            _db()
+            .table("users")
+            .update({"is_active": body.is_active})
+            .eq("id", user_id)
+            .execute()
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    if not resp.data:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return _row_to_user_out(resp.data[0])
+
+
+# ---------------------------------------------------------------------------
+# DELETE /users/{user_id}  — delete user (admin only)
+# ---------------------------------------------------------------------------
+
+@router.delete(
+    "/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a user (admin only)",
+)
+async def delete_user(
+    user_id: str = Path(..., description="The UUID of the user to delete"),
+    admin_payload: dict = Depends(_require_admin),
+) -> None:
+    """
+    Permanently delete a user from the database.
+    An admin cannot delete their own account.
+    """
+    if admin_payload.get("sub") == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot delete your own account.",
+        )
+
+    try:
+        _db().table("users").delete().eq("id", user_id).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to delete user: {exc}")

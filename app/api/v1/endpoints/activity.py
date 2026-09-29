@@ -1,87 +1,51 @@
 """
-Activity router — placeholder endpoint.
-No database connection. Returns mock responses for Swagger testing.
+Activity router — real database queries.
+Returns empty list until activity_logs table is created.
 """
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.schemas.common import ActivityOut
+from app.db.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/activity", tags=["Activity"])
 
-# ---------------------------------------------------------------------------
-# Placeholder data
-# ---------------------------------------------------------------------------
 
-_PLACEHOLDER_ACTIVITY: List[ActivityOut] = [
-    ActivityOut(
-        id="act-001",
-        actor_id="user-001",
-        actor_name="Alice Johnson",
-        action="created",
-        resource_type="project",
-        resource_id="proj-001",
-        resource_name="AI DevFlow Intelligence Suite",
-        timestamp="2026-09-28T10:00:00Z",
-    ),
-    ActivityOut(
-        id="act-002",
-        actor_id="user-002",
-        actor_name="Bob Smith",
-        action="completed",
-        resource_type="task",
-        resource_id="task-001",
-        resource_name="Design database schema",
-        timestamp="2026-09-28T11:30:00Z",
-    ),
-    ActivityOut(
-        id="act-003",
-        actor_id="user-003",
-        actor_name="Carol Davis",
-        action="assigned",
-        resource_type="task",
-        resource_id="task-003",
-        resource_name="Build Admin Dashboard",
-        timestamp="2026-09-28T13:00:00Z",
-    ),
-    ActivityOut(
-        id="act-004",
-        actor_id="user-002",
-        actor_name="Bob Smith",
-        action="commented",
-        resource_type="task",
-        resource_id="task-002",
-        resource_name="Implement FastAPI routers",
-        timestamp="2026-09-28T14:45:00Z",
-    ),
-    ActivityOut(
-        id="act-005",
-        actor_id="user-001",
-        actor_name="Alice Johnson",
-        action="updated",
-        resource_type="project",
-        resource_id="proj-002",
-        resource_name="Mobile Companion App",
-        timestamp="2026-09-28T16:20:00Z",
-    ),
-]
+def _db():
+    return get_supabase_client()
 
 
-@router.get(
-    "",
-    response_model=List[ActivityOut],
-    summary="Get recent activity feed",
-)
-async def get_activity():
+@router.get("", response_model=List[ActivityOut], summary="Get recent activity feed")
+async def get_activity(
+    limit: int = Query(default=20, ge=1, le=100, description="Max records to return"),
+) -> List[ActivityOut]:
     """
-    Retrieve a chronological feed of recent activity events across the platform.
-
-    Each activity record includes the **actor**, **action performed**,
-    the **resource** affected, and the **timestamp**.
-
-    Useful for audit trails, team dashboards, and notification systems.
-
-    > **Note:** Returns placeholder data. Database integration coming in a future milestone.
+    Retrieve a chronological feed of recent activity events.
+    Returns empty list until the activity_logs table is created in the database.
     """
-    return _PLACEHOLDER_ACTIVITY
+    try:
+        resp = (
+            _db()
+            .table("activity_logs")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        rows = resp.data or []
+        return [
+            ActivityOut(
+                id=r["id"],
+                actor_id=r.get("actor_id", ""),
+                actor_name=r.get("actor_name", ""),
+                action=r.get("action", ""),
+                resource_type=r.get("resource_type", ""),
+                resource_id=r.get("resource_id"),
+                resource_name=r.get("resource_name"),
+                timestamp=r.get("created_at", r.get("timestamp", "")),
+            )
+            for r in rows
+        ]
+    except Exception:
+        return []

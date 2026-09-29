@@ -1,88 +1,42 @@
 """
-Workflow Risks router — placeholder endpoint.
-No database connection. Returns mock responses for Swagger testing.
+Workflow Risks router — real database queries.
+Returns empty list until workflow_risks table is created.
 """
 from typing import List
 
 from fastapi import APIRouter
 
 from app.schemas.common import WorkflowRiskOut, RiskLevel
+from app.db.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/workflow-risks", tags=["Workflow Risks"])
 
-# ---------------------------------------------------------------------------
-# Placeholder data
-# ---------------------------------------------------------------------------
 
-_PLACEHOLDER_RISKS: List[WorkflowRiskOut] = [
-    WorkflowRiskOut(
-        id="risk-001",
-        title="Deployment pipeline blocked",
-        description=(
-            "CI/CD pipeline has been failing for 3 consecutive runs. "
-            "Production release is at risk."
-        ),
-        level=RiskLevel.CRITICAL,
-        project_id="proj-001",
-        project_name="AI DevFlow Intelligence Suite",
-        detected_at="2026-09-28T08:00:00Z",
-        is_resolved=False,
-    ),
-    WorkflowRiskOut(
-        id="risk-002",
-        title="Multiple overdue tasks",
-        description=(
-            "5 tasks in the current sprint are past their due dates with no updates."
-        ),
-        level=RiskLevel.HIGH,
-        project_id="proj-001",
-        project_name="AI DevFlow Intelligence Suite",
-        detected_at="2026-09-27T17:00:00Z",
-        is_resolved=False,
-    ),
-    WorkflowRiskOut(
-        id="risk-003",
-        title="Low test coverage",
-        description=(
-            "Test coverage is currently at 34%. Recommended minimum is 80%."
-        ),
-        level=RiskLevel.MEDIUM,
-        project_id="proj-001",
-        project_name="AI DevFlow Intelligence Suite",
-        detected_at="2026-09-26T12:00:00Z",
-        is_resolved=False,
-    ),
-    WorkflowRiskOut(
-        id="risk-004",
-        title="Dependency vulnerability detected",
-        description=(
-            "A high-severity CVE was found in one of the npm dependencies. "
-            "Update required."
-        ),
-        level=RiskLevel.HIGH,
-        project_id="proj-002",
-        project_name="Mobile Companion App",
-        detected_at="2026-09-25T09:30:00Z",
-        is_resolved=True,
-    ),
-]
+def _db():
+    return get_supabase_client()
 
 
-@router.get(
-    "",
-    response_model=List[WorkflowRiskOut],
-    summary="Get detected workflow risks",
-)
-async def get_workflow_risks():
+@router.get("", response_model=List[WorkflowRiskOut], summary="Get detected workflow risks")
+async def get_workflow_risks() -> List[WorkflowRiskOut]:
     """
-    Retrieve all AI-detected workflow risks across projects.
-
-    Each risk includes a **title**, **description**, **severity level**,
-    the **project** it relates to, and whether it has been **resolved**.
-
-    Risk levels: `Low`, `Medium`, `High`, `Critical`.
-
-    > **Note:** Returns placeholder data. AI risk detection engine will be
-    connected in a future milestone.
+    Retrieve all workflow risks from the database.
+    Returns empty list until the workflow_risks table is created.
     """
-    return _PLACEHOLDER_RISKS
+    try:
+        resp = _db().table("workflow_risks").select("*").execute()
+        rows = resp.data or []
+        return [
+            WorkflowRiskOut(
+                id=r["id"],
+                title=r.get("title", ""),
+                description=r.get("description", ""),
+                level=RiskLevel(r.get("level", "medium")),
+                project_id=r.get("project_id"),
+                project_name=r.get("project_name"),
+                detected_at=r.get("detected_at", r.get("created_at", "")),
+                is_resolved=r.get("is_resolved", False),
+            )
+            for r in rows
+        ]
+    except Exception:
+        return []

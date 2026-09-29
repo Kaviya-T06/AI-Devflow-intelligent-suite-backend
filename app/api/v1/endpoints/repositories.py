@@ -1,72 +1,44 @@
 """
-Repositories router — placeholder endpoint.
-No database connection. Returns mock responses for Swagger testing.
+Repositories router — real database queries.
+Returns empty list until repositories table is created.
 """
 from typing import List
 
 from fastapi import APIRouter
 
 from app.schemas.common import RepositoryOut
+from app.db.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/repositories", tags=["Repositories"])
 
-# ---------------------------------------------------------------------------
-# Placeholder data
-# ---------------------------------------------------------------------------
 
-_PLACEHOLDER_REPOS: List[RepositoryOut] = [
-    RepositoryOut(
-        id="repo-001",
-        name="ai-devflow-backend",
-        full_name="org/ai-devflow-backend",
-        description="FastAPI backend for the AI DevFlow Intelligence Suite.",
-        url="https://github.com/org/ai-devflow-backend",
-        language="Python",
-        stars=42,
-        open_issues=7,
-        last_pushed_at="2026-09-28T18:00:00Z",
-        project_id="proj-001",
-    ),
-    RepositoryOut(
-        id="repo-002",
-        name="ai-devflow-frontend",
-        full_name="org/ai-devflow-frontend",
-        description="React + TypeScript frontend for the AI DevFlow Intelligence Suite.",
-        url="https://github.com/org/ai-devflow-frontend",
-        language="TypeScript",
-        stars=38,
-        open_issues=4,
-        last_pushed_at="2026-09-28T20:00:00Z",
-        project_id="proj-001",
-    ),
-    RepositoryOut(
-        id="repo-003",
-        name="mobile-companion",
-        full_name="org/mobile-companion",
-        description="React Native mobile app for DevFlow.",
-        url="https://github.com/org/mobile-companion",
-        language="TypeScript",
-        stars=12,
-        open_issues=2,
-        last_pushed_at="2026-09-27T11:00:00Z",
-        project_id="proj-002",
-    ),
-]
+def _db():
+    return get_supabase_client()
 
 
-@router.get(
-    "",
-    response_model=List[RepositoryOut],
-    summary="List connected repositories",
-)
-async def list_repositories():
+@router.get("", response_model=List[RepositoryOut], summary="List connected repositories")
+async def list_repositories() -> List[RepositoryOut]:
     """
-    Retrieve all GitHub repositories connected to the platform.
-
-    Returns repository metadata including **name**, **language**, **stars**,
-    **open issues**, and **last push date**.
-
-    > **Note:** Returns placeholder data. GitHub integration will be connected
-    in a future milestone.
+    Retrieve all connected repositories from the database.
+    Returns empty list until the repositories table is created.
     """
-    return _PLACEHOLDER_REPOS
+    try:
+        resp = _db().table("repositories").select("*").execute()
+        rows = resp.data or []
+        return [
+            RepositoryOut(
+                id=r["id"],
+                name=r.get("name", ""),
+                full_name=r.get("full_name", ""),
+                description=r.get("description"),
+                url=r.get("url", ""),
+                language=r.get("language"),
+                stars=r.get("stars", 0),
+                open_issues=r.get("open_issues", 0),
+                last_pushed_at=r.get("last_pushed_at"),
+                project_id=r.get("project_id"),
+            )
+            for r in rows
+        ]
+    except Exception:
+        return []

@@ -12,28 +12,60 @@ from app.schemas.auth import RoleEnum
 # ---------------------------------------------------------------------------
 
 class UserOut(BaseModel):
-    id: str
-    name: str
-    email: EmailStr
-    role: RoleEnum
-    is_active: bool
+    id:         str
+    name:       str
+    email:      EmailStr
+    role:       RoleEnum
+    is_active:  bool
+    created_at: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
 
-class UserUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    role: Optional[RoleEnum] = None
-    is_active: Optional[bool] = None
+# ---------------------------------------------------------------------------
+# Request schemas
+# ---------------------------------------------------------------------------
+
+class UserCreateRequest(BaseModel):
+    name:      str
+    email:     EmailStr
+    password:  str
+    role:      RoleEnum = RoleEnum.DEVELOPER
+    is_active: bool = True
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "name": "Jane Smith Updated",
-                    "role": "project_manager",
+                    "name":      "Jane Smith",
+                    "email":     "jane@example.com",
+                    "password":  "secret123",
+                    "role":      "developer",
                     "is_active": True,
                 }
             ]
         }
     }
+
+
+class UserUpdateRequest(BaseModel):
+    name:      Optional[str]      = None
+    email:     Optional[EmailStr] = None
+    role:      Optional[RoleEnum] = None
+    is_active: Optional[bool]     = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name":      "Jane Smith Updated",
+                    "role":      "project_manager",
+                    "is_active": True,
+                }
+            ]
+        }
+    }
+
+
+class UserStatusRequest(BaseModel):
+    is_active: bool

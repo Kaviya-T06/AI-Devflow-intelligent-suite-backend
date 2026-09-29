@@ -20,6 +20,7 @@ from app.api.v1.endpoints.activity import router as activity_router
 from app.api.v1.endpoints.workflow_risks import router as workflow_risks_router
 from app.api.v1.endpoints.repositories import router as repositories_router
 from app.api.v1.endpoints.settings import router as settings_router
+from app.api.v1.endpoints.dashboard import router as dashboard_router
 
 api_router = APIRouter()
 
@@ -30,6 +31,7 @@ api_router.include_router(profiles_router)
 # New — placeholder endpoints
 api_router.include_router(auth_router)
 api_router.include_router(users_router)
+api_router.include_router(dashboard_router)
 api_router.include_router(projects_router)
 api_router.include_router(tasks_router)
 api_router.include_router(activity_router)
