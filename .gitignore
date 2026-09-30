@@ -12,6 +12,7 @@ venv/
 *.egg-info/
 dist/
 build/
+pip_cache/
 
 # Environment
 .env

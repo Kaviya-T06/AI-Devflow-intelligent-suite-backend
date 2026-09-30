@@ -1,103 +1,125 @@
 """
-Projects router — real database queries.
-Tables: projects (not yet migrated — returns empty list until DB table exists)
+Projects router — Complete Project Management CRUD API.
+Secured with FastAPI JWT and Role-Based Access Control against public.users.
 """
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
-from app.schemas.project import ProjectCreateRequest, ProjectOut, ProjectStatus
-from app.db.supabase_client import get_supabase_client
+from app.api.deps import get_current_user
+from app.schemas.project import (
+    ProjectCreateRequest,
+    ProjectOut,
+    ProjectUpdateRequest,
+)
+from app.schemas.user import UserOut
+from app.services.project_service import (
+    create_project_service,
+    delete_project_service,
+    get_project_by_id_service,
+    list_projects_service,
+    update_project_service,
+)
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
-def _db():
-    return get_supabase_client()
-
-
-@router.get("", response_model=List[ProjectOut], summary="List all projects")
-async def list_projects() -> List[ProjectOut]:
-    """Retrieve all projects from the database."""
-    try:
-        resp = _db().table("projects").select("*").execute()
-        rows = resp.data or []
-        return [
-            ProjectOut(
-                id=r["id"],
-                name=r.get("name", ""),
-                description=r.get("description"),
-                status=ProjectStatus(r.get("status", "planning")),
-                start_date=r.get("start_date"),
-                end_date=r.get("end_date"),
-                owner_id=r.get("owner_id"),
-                member_count=r.get("member_count", 0),
-                task_count=r.get("task_count", 0),
-            )
-            for r in rows
-        ]
-    except Exception:
-        # Table doesn't exist yet — return empty list (no dummy data)
-        return []
+@router.get("", response_model=List[ProjectOut], summary="List projects")
+async def list_projects(
+    status: Optional[str] = Query(None, description="Filter by project status (planning, active, on_hold, completed, archived)"),
+    project_manager_id: Optional[str] = Query(None, description="Filter by project manager UUID"),
+    search: Optional[str] = Query(None, description="Search term for project name"),
+    current_user: UserOut = Depends(get_current_user),
+) -> List[ProjectOut]:
+    """
+    List projects from the database:
+    - Admin: View all projects with optional filtering.
+    - Project Manager: View projects they manage.
+    - Developer: View platform projects.
+    """
+    return list_projects_service(
+        current_user=current_user,
+        status_filter=status,
+        pm_filter=project_manager_id,
+        search=search,
+    )
 
 
 @router.get("/{project_id}", response_model=ProjectOut, summary="Get project by ID")
 async def get_project(
     project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
 ) -> ProjectOut:
-    """Retrieve a specific project by ID."""
-    try:
-        resp = _db().table("projects").select("*").eq("id", project_id).limit(1).execute()
-        if not resp.data:
-            raise HTTPException(status_code=404, detail="Project not found.")
-        r = resp.data[0]
-        return ProjectOut(
-            id=r["id"],
-            name=r.get("name", ""),
-            description=r.get("description"),
-            status=ProjectStatus(r.get("status", "planning")),
-            start_date=r.get("start_date"),
-            end_date=r.get("end_date"),
-            owner_id=r.get("owner_id"),
-            member_count=r.get("member_count", 0),
-            task_count=r.get("task_count", 0),
-        )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+    """
+    Retrieve details for a specific project.
+    """
+    return get_project_by_id_service(
+        project_id=project_id,
+        current_user=current_user,
+    )
 
 
-@router.post("", response_model=ProjectOut, summary="Create a project", status_code=201)
-async def create_project(payload: ProjectCreateRequest) -> ProjectOut:
-    """Create a new project in the database."""
-    try:
-        import uuid
-        project_id = str(uuid.uuid4())
-        resp = _db().table("projects").insert({
-            "id": project_id,
-            "name": payload.name,
-            "description": payload.description,
-            "status": payload.status.value if payload.status else "planning",
-            "start_date": payload.start_date,
-            "end_date": payload.end_date,
-            "owner_id": payload.owner_id,
-        }).execute()
-        if not resp.data:
-            raise HTTPException(status_code=500, detail="Project creation failed.")
-        r = resp.data[0]
-        return ProjectOut(
-            id=r["id"],
-            name=r.get("name", ""),
-            description=r.get("description"),
-            status=ProjectStatus(r.get("status", "planning")),
-            start_date=r.get("start_date"),
-            end_date=r.get("end_date"),
-            owner_id=r.get("owner_id"),
-            member_count=0,
-            task_count=0,
-        )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+@router.post(
+    "",
+    response_model=ProjectOut,
+    summary="Create a new project",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_project(
+    payload: ProjectCreateRequest,
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectOut:
+    """
+    Create a new project in the database.
+    - Admin: Can create projects and assign any valid active PM.
+    - Project Manager: Can create projects for themselves or team.
+    - Developer: Forbidden (403).
+    """
+    return create_project_service(
+        payload=payload,
+        current_user=current_user,
+    )
+
+
+@router.patch(
+    "/{project_id}",
+    response_model=ProjectOut,
+    summary="Update project details",
+)
+async def update_project(
+    payload: ProjectUpdateRequest,
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectOut:
+    """
+    Partially update project attributes:
+    - Admin: Can edit any project, change PM, status, progress, dates.
+    - Project Manager: Can only edit projects they manage. Cannot reassign PM to another user.
+    - Developer: Forbidden (403).
+    """
+    return update_project_service(
+        project_id=project_id,
+        payload=payload,
+        current_user=current_user,
+    )
+
+
+@router.delete(
+    "/{project_id}",
+    response_model=ProjectOut,
+    summary="Archive / delete project",
+)
+async def delete_project(
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectOut:
+    """
+    Safely archive a project (sets status = 'archived'):
+    - Admin: Can archive any project.
+    - Project Manager: Can archive projects they manage.
+    - Developer: Forbidden (403).
+    """
+    return delete_project_service(
+        project_id=project_id,
+        current_user=current_user,
+    )
