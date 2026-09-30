@@ -28,6 +28,9 @@ def _db():
     return get_supabase_client()
 
 
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
 def _row_to_user_out(row: dict) -> UserOut:
     return UserOut(
         id=row["id"],

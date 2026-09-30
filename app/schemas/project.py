@@ -21,6 +21,13 @@ class ProjectStatus(str, Enum):
     ARCHIVED = "archived"
 
 
+class ProjectPriority(str, Enum):
+    LOW = "Low"
+    MEDIUM = "Medium"
+    HIGH = "High"
+    CRITICAL = "Critical"
+
+
 # ---------------------------------------------------------------------------
 # Nested helper schemas
 # ---------------------------------------------------------------------------
@@ -45,10 +52,12 @@ class ProjectCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(default=None, description="Project description")
     status: ProjectStatus = Field(default=ProjectStatus.PLANNING, description="Project status")
+    priority: ProjectPriority = Field(default=ProjectPriority.MEDIUM, description="Project priority")
     project_manager_id: Optional[str] = Field(default=None, description="Assigned project manager UUID")
     progress: int = Field(default=0, ge=0, le=100, description="Progress percentage (0-100)")
     start_date: Optional[date] = Field(default=None, description="Project start date")
     end_date: Optional[date] = Field(default=None, description="Project end date")
+    repository_url: Optional[str] = Field(default=None, description="Git repository URL")
 
     @field_validator("name")
     @classmethod
@@ -71,6 +80,7 @@ class ProjectCreateRequest(BaseModel):
                     "name": "AI DevFlow v2",
                     "description": "Next generation developer workflow suite.",
                     "status": "planning",
+                    "priority": "Medium",
                     "project_manager_id": "06c569d4-d002-469f-a3be-79fc1a3c6c5d",
                     "progress": 15,
                     "start_date": "2026-10-01",
@@ -85,10 +95,12 @@ class ProjectUpdateRequest(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=255, description="Project name")
     description: Optional[str] = Field(default=None, description="Project description")
     status: Optional[ProjectStatus] = Field(default=None, description="Project status")
+    priority: Optional[ProjectPriority] = Field(default=None, description="Project priority")
     project_manager_id: Optional[str] = Field(default=None, description="Assigned project manager UUID")
     progress: Optional[int] = Field(default=None, ge=0, le=100, description="Progress percentage (0-100)")
     start_date: Optional[date] = Field(default=None, description="Project start date")
     end_date: Optional[date] = Field(default=None, description="Project end date")
+    repository_url: Optional[str] = Field(default=None, description="Git repository URL")
 
     @field_validator("name")
     @classmethod
@@ -128,15 +140,21 @@ class ProjectOut(BaseModel):
     name: str
     description: Optional[str] = None
     status: ProjectStatus
+    priority: ProjectPriority = ProjectPriority.MEDIUM
     project_manager_id: Optional[str] = None
+    project_manager: Optional[ProjectManagerOut] = None
     progress: int = 0
     start_date: Optional[date] = None
     end_date: Optional[date] = None
+    repository_url: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     member_count: int = 0
     task_count: int = 0
-    project_manager: Optional[ProjectManagerOut] = None
+    completed_task_count: int = 0
+    open_task_count: int = 0
+    overdue_task_count: int = 0
+    risk_count: int = 0
 
     model_config = {
         "from_attributes": True,
@@ -147,6 +165,7 @@ class ProjectOut(BaseModel):
                     "name": "AI DevFlow v2",
                     "description": "Next generation developer workflow suite.",
                     "status": "active",
+                    "priority": "High",
                     "project_manager_id": "06c569d4-d002-469f-a3be-79fc1a3c6c5d",
                     "progress": 45,
                     "start_date": "2026-10-01",

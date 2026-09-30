@@ -44,6 +44,8 @@ async def list_projects(
         search=search,
     )
 
+# GET /projects/{project_id} — Single project
+# ---------------------------------------------------------------------------
 
 @router.get("/{project_id}", response_model=ProjectOut, summary="Get project by ID")
 async def get_project(
@@ -86,6 +88,11 @@ async def create_project(
     response_model=ProjectOut,
     summary="Update project details",
 )
+@router.put(
+    "/{project_id}",
+    response_model=ProjectOut,
+    summary="Update project details",
+)
 async def update_project(
     payload: ProjectUpdateRequest,
     project_id: str = Path(..., description="Project UUID"),
@@ -123,3 +130,4 @@ async def delete_project(
         project_id=project_id,
         current_user=current_user,
     )
+

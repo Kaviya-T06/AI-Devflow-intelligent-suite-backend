@@ -24,6 +24,7 @@ def create_application() -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+        swagger_ui_parameters={"persistAuthorization": True},
     )
 
     # ------------------------------------------------------------------

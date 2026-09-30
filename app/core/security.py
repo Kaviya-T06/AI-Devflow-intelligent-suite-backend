@@ -47,3 +47,63 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_access_token(token: str) -> dict:
     """Decode and verify a JWT token.  Raises JWTError on failure."""
     return jwt.decode(token, settings.APP_SECRET_KEY, algorithms=[_ALGORITHM])
+
+
+# ---------------------------------------------------------------------------
+# FastAPI Security Scheme & Authentication Dependencies
+# ---------------------------------------------------------------------------
+
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+security_scheme = HTTPBearer(
+    scheme_name="Bearer",
+    bearerFormat="JWT",
+    description="Enter JWT access token",
+    auto_error=False,
+)
+
+
+async def get_current_user(
+    request: Request,
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
+) -> dict:
+    """
+    Validate the Bearer JWT token and return the decoded payload dict.
+    Raises 401 Unauthorized if token is missing, invalid, or expired.
+    """
+    token: Optional[str] = None
+
+    if creds and creds.credentials:
+        token = creds.credentials.strip()
+    else:
+        # Fallback to direct Authorization header check if credentials was not parsed
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth_header:
+            auth_header = auth_header.strip()
+            if auth_header.lower().startswith("bearer "):
+                token = auth_header[7:].strip()
+            else:
+                token = auth_header
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # In case the token itself still has a 'Bearer ' prefix (e.g. entered into Swagger UI with prefix)
+    if token.lower().startswith("bearer "):
+        token = token[7:].strip()
+
+    try:
+        payload = decode_access_token(token)
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
