@@ -1,23 +1,36 @@
 """
-Profiles router — CRUD operations for user profiles.
-Authentication is validated by checking the JWT token issued by Supabase Auth.
+LEGACY MODULE — Supabase Auth Profiles Router
+
+ARCHITECTURAL CONFLICT & ISOLATION NOTE:
+This router originally validated tokens using Supabase GoTrue Auth (via `supabase.auth.get_user(token)`)
+and read/wrote from a separate `profiles` table.
+The application's active authentication architecture is FastAPI JWT backed by `public.users`.
+
+For all current application flows, user profiles and permissions are managed through:
+  - `POST /api/v1/auth/login`
+  - `POST /api/v1/auth/register`
+  - `GET /api/v1/users/me`
+  - `PATCH /api/v1/users/me`
+  - `GET /api/v1/users` (CRUD)
+
+This module is isolated from the active authentication pipeline and preserved without silent deletion.
 """
 from uuid import UUID
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Header, Depends
-from typing import Optional
 
 from app.schemas.profile import ProfileRead, ProfileUpdate
 from app.services.profile_service import ProfileService
 from app.db.supabase_client import get_supabase_anon_client
 
-router = APIRouter(prefix="/profiles", tags=["Profiles"])
+router = APIRouter(prefix="/profiles", tags=["Profiles (Legacy Supabase Auth)"])
 
 
 def _verify_token(authorization: Optional[str] = Header(None)) -> dict:
     """
-    Validate the Bearer JWT token using Supabase anon client.
-    Returns the user payload if valid; raises 401 otherwise.
+    Legacy Supabase Auth token validator.
+    Validates token against Supabase GoTrue auth client.
     """
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
@@ -32,9 +45,9 @@ def _verify_token(authorization: Optional[str] = Header(None)) -> dict:
         raise HTTPException(status_code=401, detail=f"Authentication failed: {str(exc)}")
 
 
-@router.get("/me", response_model=ProfileRead, summary="Get own profile")
+@router.get("/me", response_model=ProfileRead, summary="[Legacy] Get own profile via Supabase Auth")
 async def get_my_profile(auth: dict = Depends(_verify_token)):
-    """Return the authenticated user's profile."""
+    """Return the Supabase Auth user's profile."""
     user = auth["user"]
     service = ProfileService()
     profile = service.get_profile(UUID(user.id))
@@ -43,12 +56,12 @@ async def get_my_profile(auth: dict = Depends(_verify_token)):
     return profile
 
 
-@router.patch("/me", response_model=ProfileRead, summary="Update own profile")
+@router.patch("/me", response_model=ProfileRead, summary="[Legacy] Update own profile via Supabase Auth")
 async def update_my_profile(
     payload: ProfileUpdate,
     auth: dict = Depends(_verify_token),
 ):
-    """Update the authenticated user's permitted profile fields."""
+    """Update the Supabase Auth user's permitted profile fields."""
     user = auth["user"]
     service = ProfileService()
     updated = service.update_profile(UUID(user.id), payload)
@@ -60,13 +73,9 @@ async def update_my_profile(
 @router.get(
     "",
     response_model=list[ProfileRead],
-    summary="List all profiles (Admin only)",
+    summary="[Legacy] List all profiles via Supabase Auth",
 )
 async def list_profiles(auth: dict = Depends(_verify_token)):
-    """
-    Return all user profiles.
-    In Milestone 1 this is open to any authenticated user for development purposes.
-    In production, add an admin-role guard here.
-    """
+    """Return all Supabase Auth user profiles."""
     service = ProfileService()
     return service.get_all_profiles()

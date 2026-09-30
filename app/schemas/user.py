@@ -69,3 +69,7 @@ class UserUpdateRequest(BaseModel):
 
 class UserStatusRequest(BaseModel):
     is_active: bool
+
+
+class UserSelfUpdateRequest(BaseModel):
+    name: Optional[str] = None

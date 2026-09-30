@@ -94,6 +94,10 @@ def register_user(payload: RegisterRequest) -> RegisterResponse:
     pw_hash = hash_password(payload.password)
 
     # ── 3. Insert into users ───────────────────────────────────────────────
+    # Public registration unconditionally defaults to 'developer' role.
+    # Elevated roles (admin / project_manager) must be created/assigned by an authorized admin.
+    safe_role = RoleEnum.DEVELOPER.value
+
     user_id = str(uuid.uuid4())
     try:
         resp = _db().table("users").insert({
@@ -101,7 +105,7 @@ def register_user(payload: RegisterRequest) -> RegisterResponse:
             "name":          payload.name.strip(),
             "email":         email,
             "password_hash": pw_hash,
-            "role":          payload.role.value,   # already lowercase: admin/developer/project_manager
+            "role":          safe_role,
             "is_active":     True,
         }).execute()
     except Exception as exc:
