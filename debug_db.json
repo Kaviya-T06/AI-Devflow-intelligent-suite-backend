@@ -1,0 +1,524 @@
+{
+  "users": [
+    {
+      "id": "06c569d4-d002-469f-a3be-79fc1a3c6c5d",
+      "name": "Alice Admin",
+      "email": "admin@gmail.com",
+      "role": "admin"
+    },
+    {
+      "id": "9eb21d44-5a89-4b08-8d49-9b54833f0f01",
+      "name": "Madhumitha",
+      "email": "madhumitha@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "3ca84c60-3639-449e-84d0-b776d748d1f9",
+      "name": "Bob",
+      "email": "bob@gmail.com",
+      "role": "admin"
+    },
+    {
+      "id": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6",
+      "name": "Kaviya",
+      "email": "kaviya@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "c39fe1d5-e050-46d8-9a72-074164440d1c",
+      "name": "Meera",
+      "email": "meera@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "ab60cba7-cdff-4f7f-a24b-8f59d1e6023f",
+      "name": "Rahul Kumar",
+      "email": "rahul.kumar@gmail.com",
+      "role": "project_manager"
+    },
+    {
+      "id": "8e81ded7-62a4-4051-aa1b-7a614c9066dc",
+      "name": "Ananya",
+      "email": "ananya@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "8e21a0e1-b592-474f-94f4-a2a206f8ff70",
+      "name": "Arjun",
+      "email": "arjun@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "52494cc6-4583-4cd9-a18e-d5b2b200a68b",
+      "name": "Meghana",
+      "email": "meghana@gmail.com",
+      "role": "project_manager"
+    },
+    {
+      "id": "a474e2b2-6099-437b-b03e-a5be105fe268",
+      "name": "Priya",
+      "email": "priya@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "cd9d0994-1918-49a0-99bc-d20a35911afb",
+      "name": "Sneha",
+      "email": "sneha@gmail.com",
+      "role": "project_manager"
+    },
+    {
+      "id": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b",
+      "name": "Vivek",
+      "email": "vivek@gmail.com",
+      "role": "developer"
+    },
+    {
+      "id": "d6183959-3e7d-4419-ba19-d2fbb3dbeb63",
+      "name": "Test Admin",
+      "email": "testadmin1105@example.com",
+      "role": "developer"
+    },
+    {
+      "id": "f5a7a28a-bef1-4be1-b0ac-f5e91b3ed7b8",
+      "name": "Test Admin",
+      "email": "testadmin8295@example.com",
+      "role": "developer"
+    },
+    {
+      "id": "122a3c40-d713-45c0-afed-eda32c770d2b",
+      "name": "Test Admin",
+      "email": "testadmin8551@example.com",
+      "role": "developer"
+    },
+    {
+      "id": "434b928e-0468-4eec-9d9c-6ccad27ff575",
+      "name": "Test Admin",
+      "email": "testadmin7105@example.com",
+      "role": "developer"
+    },
+    {
+      "id": "e3d29891-16a1-4ba1-9594-3e073b7f50e2",
+      "name": "Test",
+      "email": "testadmin4186@example.com",
+      "role": "developer"
+    },
+    {
+      "id": "6d171d36-2a1b-483d-9dd1-97114c09424f",
+      "name": "Test",
+      "email": "testadmin2442@example.com",
+      "role": "developer"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "44ed31c7-2f49-4b2c-862a-c99b6acc4371",
+      "title": "Design and implement module interface",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "44ff38d4-638c-4e70-bcd0-28cc3998d5bc",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "6297f50a-6114-4cea-bf39-89eb70021229",
+      "title": "Create database schema and integration",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "964899ca-3ad1-42e6-8314-e14b48252887",
+      "title": "Implement frontend functionality",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "e4b4f509-5da4-49d8-be89-0a77a5bf8f95",
+      "title": "Add validation and error handling",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "357a6920-f419-4778-a2d8-2d00d07bc7a5",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "b65fcba5-dca3-4e54-9a7c-a1af586998d9",
+      "title": "Perform integration and API testing",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "022c8650-308e-4cbf-bf47-4b72ad9c4910",
+      "title": "Design and implement module interface",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "2609f5f9-1aef-48e6-8706-e8e4d1ff4ee1",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "5cf8f511-4e74-4764-96fd-97f1adff01a0",
+      "title": "Create database schema and integration",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "443226fb-04f7-477b-b4ed-844c8a8cb58c",
+      "title": "Implement frontend functionality",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "548c1017-a6e8-41a7-8a79-2d874b957a7e",
+      "title": "Add validation and error handling",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "5b3176b4-aac0-432d-a057-576aef59371e",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "6c80e9ee-dead-45c1-b9ee-247786d25e72",
+      "title": "Perform integration and API testing",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "ffe9fa54-c5ae-4200-a930-cc19a1e9f64e",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "af0521c7-60af-41bb-b29e-cf7dce67f83c",
+      "title": "Design and implement module interface",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "c08804db-365f-48ea-bf53-b3bcace1004d",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "ceba3592-56c0-4a67-9c31-01104f0ad6aa",
+      "title": "Create database schema and integration",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "f0977791-ea46-4577-98a1-f811d111f91c",
+      "title": "Implement frontend functionality",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "b2bfed47-c16a-4996-a52e-26f5daae14c6",
+      "title": "Add validation and error handling",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "f3fa2fea-fcfe-4c6f-a5bf-20f94efc5fae",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "03e0d8dc-b396-468a-861a-28e976bbdd58",
+      "title": "Perform integration and API testing",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "51d91428-57ab-4117-95d6-94de6805dfe4",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "2d405c3d-1af3-410f-9ac5-005064903357",
+      "title": "Design and implement module interface",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "03a7095c-cc94-47c7-9065-017af8ab5091",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "bf909f9e-1550-48aa-b670-af4ec9f9ec76",
+      "title": "Implement frontend functionality",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "dbffdb4c-108a-4185-a562-3d00d3dc34b3",
+      "title": "Add validation and error handling",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "33c1dda4-2ece-42f6-b650-2f263b68786b",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "63a40642-02fd-40fa-880e-e00a89114496",
+      "title": "Perform integration and API testing",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "8348f5c0-5a4d-4964-b54b-9f57218884a1",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "eec31ee2-666a-468a-bebc-64ab6c1108b8",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "a2919b0b-f322-4c41-aca1-db951f79fa50",
+      "title": "Design and implement module interface",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "b0d8ca8b-4e26-4e77-8491-79c17cd22db5",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "4261fb87-0242-4bd8-b4f6-7a5db5af3c45",
+      "title": "Create database schema and integration",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "38a7a570-7bb2-4be7-a177-e4ac78024041",
+      "title": "Implement frontend functionality",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "3087fba1-f7eb-41a5-8dd3-4befc0c3cf17",
+      "title": "Add validation and error handling",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "a283c5e8-dbcd-47e4-82c5-40e002746974",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "a2e1e4b2-eaaa-4ca2-897d-155e3a548193",
+      "title": "Perform integration and API testing",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "0ff664f6-eb4b-4a57-98fd-6cc44827599c",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "8030ddaf-a113-4a34-aa0c-4cc5063803bf",
+      "title": "Design and implement module interface",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "36160563-8426-4515-a064-9cbd8661cfea",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "7634d3f4-4240-4434-aa51-5794b376fff7",
+      "title": "Create database schema and integration",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "64fb0189-d04c-4258-a1cb-5b5624456980",
+      "title": "Implement frontend functionality",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "08224894-0d71-4f7e-a66a-bccd52b31bc3",
+      "title": "Add validation and error handling",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "46425c61-2be9-4448-a0b2-5394b633b470",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "76c1cc29-b23a-41f3-8bce-1657154dd861",
+      "title": "Perform integration and API testing",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "30eefb35-f5e3-4a6b-98e2-fabc4fdfb392",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "0422b45e-aa52-40a7-884d-a8092e0d96e7",
+      "title": "Design and implement module interface",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "7295fab3-ea65-42c7-8c87-192e2230ec14",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "a71087a2-389a-4743-9ecf-84b940779c0b",
+      "title": "Create database schema and integration",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "ecbeaeee-2525-4da7-afce-504d377a43da",
+      "title": "Implement frontend functionality",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "32fef351-194a-4eaa-bc74-08a824485ecb",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "0e33877f-dd92-4b4e-a352-ba354b9f56f2",
+      "title": "Perform integration and API testing",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "c04c28df-a1e8-4103-9f7f-1d3f40110dcd",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "e8eb2239-b988-47cd-8ab0-c2d51021ab87",
+      "title": "Design and implement module interface",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "f1cd157a-4a5e-454c-82a6-b1c70b76809c",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "18f08549-1321-47d2-88d9-1bfcda14878a",
+      "title": "Create database schema and integration",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "22c80828-df82-4a4f-b995-a7453222fbc6",
+      "title": "Implement frontend functionality",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "0939fe82-49e1-4dd9-b8c0-5b02a2c8da7e",
+      "title": "Add validation and error handling",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "35392587-4e23-4894-ad5a-f87d72c6321e",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "161a4080-5adc-46b8-9931-626b22f3cccc",
+      "title": "Perform integration and API testing",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "5aafa03b-ca4e-4900-a242-9afd1be3391d",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "986b2837-eba2-4800-ab8b-c980ff5a422f",
+      "title": "Design and implement module interface",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "cbbf20a1-ce39-44b6-9979-4947ccafdcdc",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "c24a87b2-5368-4ab4-945b-e3b4d1f67740",
+      "title": "Create database schema and integration",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "02dc759c-8960-497e-bd35-b9c5c699e7c4",
+      "title": "Implement frontend functionality",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "1789622e-3c93-45e7-956b-756c7a64013f",
+      "title": "Add validation and error handling",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "35751784-c00e-4322-8123-6c2d0ccceafc",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "7b40aa3c-3872-471b-9407-7abdcc131dd6",
+      "title": "Perform integration and API testing",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "db7f5828-ac43-440e-b3a8-3c92138e0659",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "6143540e-7102-48f1-8e89-97bbed0c4b36",
+      "title": "Design and implement module interface",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "4d336e86-55a0-45b6-9d2a-60d3274b9d16",
+      "title": "Develop backend API endpoints",
+      "assigned_to": "8e21a0e1-b592-474f-94f4-a2a206f8ff70"
+    },
+    {
+      "id": "d36a3312-9619-4376-a5b9-479c15c9f3ab",
+      "title": "Create database schema and integration",
+      "assigned_to": "82d17cbd-1f8f-4dff-be46-3a1efed6ce1b"
+    },
+    {
+      "id": "fc36ab45-e498-4cef-920c-665b83264667",
+      "title": "Implement frontend functionality",
+      "assigned_to": "0e6ee2e9-d8bd-4802-899d-3e9ba81c1cb6"
+    },
+    {
+      "id": "e06137b4-6ce4-4d0b-a212-aaa6a8947ec6",
+      "title": "Add validation and error handling",
+      "assigned_to": "8e81ded7-62a4-4051-aa1b-7a614c9066dc"
+    },
+    {
+      "id": "8f4e9ce9-775a-48da-870c-11cb83e1ef9d",
+      "title": "Integrate frontend with backend APIs",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "db24b778-8da1-4fd8-9c07-ecb2c616eac4",
+      "title": "Perform integration and API testing",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "f78af5df-5a2e-442f-b9a8-b9bafed967be",
+      "title": "Prepare deployment and technical documentation",
+      "assigned_to": "c39fe1d5-e050-46d8-9a72-074164440d1c"
+    },
+    {
+      "id": "38b7e701-3bc5-4bf6-b817-b6b58f3c5fc1",
+      "title": "Test Task Direct",
+      "assigned_to": null
+    },
+    {
+      "id": "59d0c29f-df77-40e4-b227-65b5cc4005cb",
+      "title": "Implement employee search api",
+      "assigned_to": "a474e2b2-6099-437b-b03e-a5be105fe268"
+    },
+    {
+      "id": "2f95a391-e403-4758-9d91-334c4396b3a6",
+      "title": "Create database schema and integration",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    },
+    {
+      "id": "688a5bcf-8b98-4720-aae2-e582fa717247",
+      "title": "Add validation and error handling",
+      "assigned_to": "9eb21d44-5a89-4b08-8d49-9b54833f0f01"
+    }
+  ]
+}

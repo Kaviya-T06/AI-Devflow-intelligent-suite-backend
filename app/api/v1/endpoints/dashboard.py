@@ -72,6 +72,13 @@ async def get_dashboard_stats(current_user: UserOut = Depends(get_current_user))
         projects_query = _db().table("projects").select("id, name, status, progress, updated_at")
         if role == "project_manager":
             projects_query = projects_query.eq("project_manager_id", user_id)
+        elif role == "developer":
+            task_resp = _db().table("tasks").select("project_id").eq("assigned_to", user_id).execute()
+            project_ids = list(set([str(t["project_id"]) for t in (task_resp.data or []) if t.get("project_id")]))
+            if project_ids:
+                projects_query = projects_query.in_("id", project_ids)
+            else:
+                projects_query = projects_query.in_("id", ["00000000-0000-0000-0000-000000000000"]) # Ensure no results if no projects
         
         projects_resp = projects_query.order("updated_at", desc=True).execute()
         projects_data = projects_resp.data or []

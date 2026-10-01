@@ -60,6 +60,7 @@ def _row_to_project_out(
         updated_at=r.get("updated_at"),
         member_count=r.get("member_count", 0),
         task_count=r.get("task_count", 0),
+        completed_task_count=r.get("completed_task_count", 0),
         project_manager=manager_obj,
     )
 
@@ -150,6 +151,12 @@ def list_projects_service(
         # Role scoping
         if current_user.role == RoleEnum.PROJECT_MANAGER:
             query = query.eq("project_manager_id", current_user.id)
+        elif current_user.role == RoleEnum.DEVELOPER:
+            task_resp = _db().table("tasks").select("project_id").eq("assigned_to", current_user.id).execute()
+            project_ids = list(set([str(t["project_id"]) for t in (task_resp.data or []) if t.get("project_id")]))
+            if not project_ids:
+                return []
+            query = query.in_("id", project_ids)
         elif pm_filter:
             query = query.eq("project_manager_id", pm_filter)
 
@@ -163,6 +170,17 @@ def list_projects_service(
         query = query.order("created_at", desc=True)
         resp = query.execute()
         rows = resp.data or []
+
+        # Fetch tasks to compute counts
+        if rows:
+            project_ids_in_resp = [p["id"] for p in rows]
+            task_resp = _db().table("tasks").select("project_id, status").in_("project_id", project_ids_in_resp).execute()
+            tasks = task_resp.data or []
+            
+            for p in rows:
+                p_tasks = [t for t in tasks if str(t["project_id"]) == str(p["id"])]
+                p["task_count"] = len(p_tasks)
+                p["completed_task_count"] = sum(1 for t in p_tasks if (t.get("status") or "").upper() == "COMPLETED")
 
         managers_map = _populate_managers(rows)
         return [_row_to_project_out(r, managers_map) for r in rows]
@@ -202,6 +220,19 @@ def get_project_by_id_service(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to access this project.",
                 )
+        elif current_user.role == RoleEnum.DEVELOPER:
+            task_resp = _db().table("tasks").select("id").eq("project_id", project_id).eq("assigned_to", current_user.id).limit(1).execute()
+            if not task_resp.data:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to access this project.",
+                )
+
+        # Fetch tasks for counts
+        task_resp = _db().table("tasks").select("status").eq("project_id", project_id).execute()
+        tasks = task_resp.data or []
+        project_row["task_count"] = len(tasks)
+        project_row["completed_task_count"] = sum(1 for t in tasks if (t.get("status") or "").upper() == "COMPLETED")
 
         managers_map = _populate_managers([project_row])
         return _row_to_project_out(project_row, managers_map)
@@ -250,7 +281,7 @@ def create_project_service(
         "description": payload.description,
         "status": payload.status.value,
         "project_manager_id": pm_id,
-        "progress": payload.progress,
+        "progress": 0,  # Progress is now calculated dynamically from tasks
         "start_date": payload.start_date.isoformat() if payload.start_date else None,
         "end_date": payload.end_date.isoformat() if payload.end_date else None,
     }
@@ -343,8 +374,7 @@ def update_project_service(
     if "status" in update_data and update_data["status"] is not None:
         update_fields["status"] = update_data["status"].value
 
-    if "progress" in update_data and update_data["progress"] is not None:
-        update_fields["progress"] = update_data["progress"]
+    # Progress is calculated dynamically, so we ignore payload.progress
 
     if "project_manager_id" in update_data:
         pm_id = update_data["project_manager_id"]

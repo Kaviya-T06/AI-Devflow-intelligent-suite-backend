@@ -1,11 +1,11 @@
 """
 Pydantic schemas for Tasks endpoints.
 """
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -13,18 +13,17 @@ from pydantic import BaseModel
 # ---------------------------------------------------------------------------
 
 class TaskStatus(str, Enum):
-    TODO = "Todo"
-    IN_PROGRESS = "In Progress"
-    IN_REVIEW = "In Review"
-    DONE = "Done"
-    BLOCKED = "Blocked"
+    TODO = "TODO"
+    IN_PROGRESS = "IN_PROGRESS"
+    REVIEW = "REVIEW"
+    COMPLETED = "COMPLETED"
 
 
 class TaskPriority(str, Enum):
-    LOW = "Low"
-    MEDIUM = "Medium"
-    HIGH = "High"
-    CRITICAL = "Critical"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
 
 
 # ---------------------------------------------------------------------------
@@ -32,30 +31,38 @@ class TaskPriority(str, Enum):
 # ---------------------------------------------------------------------------
 
 class TaskCreateRequest(BaseModel):
-    title: str
+    title: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
     project_id: Optional[str] = None
-    assignee_id: Optional[str] = None
+    assigned_to: Optional[str] = None
     due_date: Optional[date] = None
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "title": "Implement user authentication",
-                    "description": "Set up JWT-based auth flow.",
-                    "status": "Todo",
-                    "priority": "High",
+                    "title": "Implement developer dashboard",
+                    "description": "Create the role-based dashboard for developers.",
+                    "status": "TODO",
+                    "priority": "HIGH",
                     "project_id": "project-uuid-here",
-                    "assignee_id": "user-uuid-here",
+                    "assigned_to": "user-uuid-here",
                     "due_date": "2026-10-15",
                 }
             ]
         }
     }
 
+class TaskUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    status: Optional[TaskStatus] = None
+    priority: Optional[TaskPriority] = None
+    project_id: Optional[str] = None
+    assigned_to: Optional[str] = None
+    due_date: Optional[date] = None
 
 # ---------------------------------------------------------------------------
 # Response schemas
@@ -63,10 +70,28 @@ class TaskCreateRequest(BaseModel):
 
 class TaskOut(BaseModel):
     id: str
+    project_id: Optional[str] = None
     title: str
     description: Optional[str] = None
+    assigned_to: Optional[str] = None
     status: TaskStatus
     priority: TaskPriority
-    project_id: Optional[str] = None
-    assignee_id: Optional[str] = None
     due_date: Optional[date] = None
+    created_at: Optional[datetime] = None
+    assigned_at: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    review_started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    # Joined fields
+    project_name: Optional[str] = None
+    developer_name: Optional[str] = None
+
+    # Optional joined entities
+    project: Optional[dict] = None
+    assignee: Optional[dict] = None
+
+    model_config = {
+        "from_attributes": True,
+    }
