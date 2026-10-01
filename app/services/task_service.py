@@ -102,7 +102,7 @@ def list_tasks_service(
 
         # Developer can only see their own tasks
         print(f"DEBUG: list_tasks_service called by user={current_user.id}, role={current_user.role}")
-        if current_user.role == RoleEnum.DEVELOPER:
+        if current_user.role.value == RoleEnum.DEVELOPER.value:
             print(f"DEBUG: Filtering tasks for assigned_to={current_user.id}")
             query = query.eq("assigned_to", current_user.id)
 
@@ -137,7 +137,7 @@ def get_task_by_id_service(
             )
         task_row = resp.data[0]
 
-        if current_user.role == RoleEnum.DEVELOPER:
+        if current_user.role.value == RoleEnum.DEVELOPER.value:
             if task_row.get("assigned_to") != current_user.id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -165,7 +165,7 @@ def update_task_status_service(
     - Developer: Can only update their own assigned tasks.
     - Enforces valid state transitions and updates timestamps automatically.
     """
-    if current_user.role == RoleEnum.DEVELOPER and not payload.status:
+    if current_user.role.value == RoleEnum.DEVELOPER.value and not payload.status:
         # Developer can only change status for now
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -189,7 +189,7 @@ def update_task_status_service(
             detail=f"Database error while finding task: {str(exc)}",
         )
 
-    if current_user.role == RoleEnum.DEVELOPER:
+    if current_user.role.value == RoleEnum.DEVELOPER.value:
         if existing_task.get("assigned_to") != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -31,7 +31,7 @@ async def get_activity(
         # Join users table to get user info
         query = _db().table("activity_logs").select("*, users(id, name, email)")
         
-        if current_user.role == RoleEnum.DEVELOPER:
+        if current_user.role.value == RoleEnum.DEVELOPER.value:
             query = query.eq("user_id", current_user.id)
             
         resp = query.order("created_at", desc=True).limit(limit).execute()

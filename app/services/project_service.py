@@ -149,9 +149,9 @@ def list_projects_service(
         query = _db().table("projects").select("*")
 
         # Role scoping
-        if current_user.role == RoleEnum.PROJECT_MANAGER:
+        if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
             query = query.eq("project_manager_id", current_user.id)
-        elif current_user.role == RoleEnum.DEVELOPER:
+        elif current_user.role.value == RoleEnum.DEVELOPER.value:
             task_resp = _db().table("tasks").select("project_id").eq("assigned_to", current_user.id).execute()
             project_ids = list(set([str(t["project_id"]) for t in (task_resp.data or []) if t.get("project_id")]))
             if not project_ids:
@@ -214,13 +214,13 @@ def get_project_by_id_service(
         project_row = resp.data[0]
 
         # Role check for Project Manager
-        if current_user.role == RoleEnum.PROJECT_MANAGER:
+        if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
             if project_row.get("project_manager_id") != current_user.id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to access this project.",
                 )
-        elif current_user.role == RoleEnum.DEVELOPER:
+        elif current_user.role.value == RoleEnum.DEVELOPER.value:
             task_resp = _db().table("tasks").select("id").eq("project_id", project_id).eq("assigned_to", current_user.id).limit(1).execute()
             if not task_resp.data:
                 raise HTTPException(
@@ -256,7 +256,7 @@ def create_project_service(
     - Project Manager: Can create projects (defaults to self if unassigned).
     - Developer: Forbidden (403).
     """
-    if current_user.role == RoleEnum.DEVELOPER:
+    if current_user.role.value == RoleEnum.DEVELOPER.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Developers are not permitted to create projects.",
@@ -264,7 +264,7 @@ def create_project_service(
 
     # Determine assigned PM
     pm_id = payload.project_manager_id
-    if current_user.role == RoleEnum.PROJECT_MANAGER:
+    if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
         if not pm_id:
             pm_id = current_user.id
         elif pm_id != current_user.id:
@@ -326,7 +326,7 @@ def update_project_service(
     - Project Manager: Can only edit projects they manage. Cannot reassign PM to another user.
     - Developer: Forbidden (403).
     """
-    if current_user.role == RoleEnum.DEVELOPER:
+    if current_user.role.value == RoleEnum.DEVELOPER.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Developers are not permitted to modify projects.",
@@ -350,7 +350,7 @@ def update_project_service(
         )
 
     # Role enforcement
-    if current_user.role == RoleEnum.PROJECT_MANAGER:
+    if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
         if existing_project.get("project_manager_id") != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -488,7 +488,7 @@ def delete_project_service(
     - Developer: Forbidden (403).
     - Sets status = 'archived'.
     """
-    if current_user.role == RoleEnum.DEVELOPER:
+    if current_user.role.value == RoleEnum.DEVELOPER.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Developers are not permitted to delete or archive projects.",
@@ -511,7 +511,7 @@ def delete_project_service(
             detail=f"Database error while finding project: {str(exc)}",
         )
 
-    if current_user.role == RoleEnum.PROJECT_MANAGER:
+    if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
         if existing_project.get("project_manager_id") != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
