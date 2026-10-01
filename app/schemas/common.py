@@ -11,15 +11,20 @@ from pydantic import BaseModel
 # Activity
 # ---------------------------------------------------------------------------
 
+class UserSummary(BaseModel):
+    id: str
+    full_name: str
+    email: str
+
 class ActivityOut(BaseModel):
     id: str
-    actor_id: str
-    actor_name: str
+    user_id: Optional[str] = None
     action: str
-    resource_type: str
-    resource_id: Optional[str] = None
-    resource_name: Optional[str] = None
-    timestamp: str
+    entity_type: str
+    entity_id: Optional[str] = None
+    description: str
+    created_at: str
+    user: Optional[UserSummary] = None
 
 
 # ---------------------------------------------------------------------------

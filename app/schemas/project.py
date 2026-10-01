@@ -34,7 +34,7 @@ class ProjectPriority(str, Enum):
 
 class ProjectManagerOut(BaseModel):
     id: str
-    name: str
+    full_name: str
     email: str
     role: str
     is_active: bool = True

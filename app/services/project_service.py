@@ -17,6 +17,7 @@ from app.schemas.project import (
     ProjectUpdateRequest,
 )
 from app.schemas.user import UserOut
+from app.services.activity_service import log_activity
 
 
 def _db():
@@ -40,7 +41,7 @@ def _row_to_project_out(
         m = managers_map[pm_id]
         manager_obj = ProjectManagerOut(
             id=str(m["id"]),
-            name=m.get("name", ""),
+            full_name=m.get("name", ""),
             email=m.get("email", ""),
             role=m.get("role", "project_manager"),
             is_active=m.get("is_active", True),
@@ -263,6 +264,16 @@ def create_project_service(
             )
         created_row = resp.data[0]
         managers_map = _populate_managers([created_row])
+        
+        # Log Activity
+        log_activity(
+            user_id=current_user.id,
+            action="PROJECT_CREATED",
+            entity_type="project",
+            entity_id=created_row["id"],
+            description=f"Project '{created_row['name']}' was created"
+        )
+        
         return _row_to_project_out(created_row, managers_map)
     except HTTPException:
         raise
@@ -320,35 +331,35 @@ def update_project_service(
                 detail="Project managers cannot reassign project ownership. Only administrators can change the project manager.",
             )
 
+    update_data = payload.model_dump(exclude_unset=True)
     update_fields = {}
 
-    if payload.name is not None:
-        update_fields["name"] = payload.name
+    if "name" in update_data and update_data["name"] is not None:
+        update_fields["name"] = update_data["name"]
 
-    if payload.description is not None:
-        update_fields["description"] = payload.description
+    if "description" in update_data:
+        update_fields["description"] = update_data["description"]
 
-    if payload.status is not None:
-        update_fields["status"] = payload.status.value
+    if "status" in update_data and update_data["status"] is not None:
+        update_fields["status"] = update_data["status"].value
 
-    if payload.progress is not None:
-        update_fields["progress"] = payload.progress
+    if "progress" in update_data and update_data["progress"] is not None:
+        update_fields["progress"] = update_data["progress"]
 
-    # Project Manager validation if changed
-    if payload.project_manager_id is not None:
-        if payload.project_manager_id != existing_project.get("project_manager_id"):
-            validate_project_manager(payload.project_manager_id)
-        update_fields["project_manager_id"] = payload.project_manager_id
+    if "project_manager_id" in update_data:
+        pm_id = update_data["project_manager_id"]
+        if pm_id != existing_project.get("project_manager_id"):
+            if pm_id is not None:
+                validate_project_manager(pm_id)
+        update_fields["project_manager_id"] = pm_id
 
     # Date cross-validation with existing record
     new_start_date = (
-        payload.start_date.isoformat()
-        if payload.start_date is not None
+        update_data["start_date"].isoformat() if "start_date" in update_data and update_data["start_date"] is not None
         else existing_project.get("start_date")
     )
     new_end_date = (
-        payload.end_date.isoformat()
-        if payload.end_date is not None
+        update_data["end_date"].isoformat() if "end_date" in update_data and update_data["end_date"] is not None
         else existing_project.get("end_date")
     )
 
@@ -358,10 +369,10 @@ def update_project_service(
             detail="end_date must not be before start_date.",
         )
 
-    if payload.start_date is not None:
-        update_fields["start_date"] = payload.start_date.isoformat()
-    if payload.end_date is not None:
-        update_fields["end_date"] = payload.end_date.isoformat()
+    if "start_date" in update_data:
+        update_fields["start_date"] = update_data["start_date"].isoformat() if update_data["start_date"] else None
+    if "end_date" in update_data:
+        update_fields["end_date"] = update_data["end_date"].isoformat() if update_data["end_date"] else None
 
     if not update_fields:
         managers_map = _populate_managers([existing_project])
@@ -376,6 +387,56 @@ def update_project_service(
             )
         updated_row = resp.data[0]
         managers_map = _populate_managers([updated_row])
+        
+        # Log Activities based on what changed
+        if "name" in update_fields or "description" in update_fields:
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_UPDATED",
+                entity_type="project",
+                entity_id=updated_row["id"],
+                description=f"Project '{updated_row['name']}' details were updated"
+            )
+            
+        if "status" in update_fields:
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_STATUS_CHANGED",
+                entity_type="project",
+                entity_id=updated_row["id"],
+                description=f"Project '{updated_row['name']}' status changed from {existing_project.get('status')} to {updated_row['status']}"
+            )
+            
+        if "progress" in update_fields:
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_PROGRESS_UPDATED",
+                entity_type="project",
+                entity_id=updated_row["id"],
+                description=f"Project '{updated_row['name']}' progress changed from {existing_project.get('progress')}% to {updated_row['progress']}%"
+            )
+            
+        if "project_manager_id" in update_fields:
+            new_manager_name = "Unassigned"
+            if updated_row["project_manager_id"] and managers_map.get(str(updated_row["project_manager_id"])):
+                new_manager_name = managers_map[str(updated_row["project_manager_id"])].get("name", "Unknown User")
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_MANAGER_CHANGED",
+                entity_type="project",
+                entity_id=updated_row["id"],
+                description=f"Project '{updated_row['name']}' assigned to {new_manager_name}"
+            )
+            
+        if "start_date" in update_fields or "end_date" in update_fields:
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_DATES_UPDATED",
+                entity_type="project",
+                entity_id=updated_row["id"],
+                description=f"Project '{updated_row['name']}' timeline was updated"
+            )
+
         return _row_to_project_out(updated_row, managers_map)
     except HTTPException:
         raise
@@ -442,6 +503,16 @@ def delete_project_service(
             )
         archived_row = resp.data[0]
         managers_map = _populate_managers([archived_row])
+        
+        # Log Activity
+        log_activity(
+            user_id=current_user.id,
+            action="PROJECT_ARCHIVED",
+            entity_type="project",
+            entity_id=archived_row["id"],
+            description=f"Project '{archived_row['name']}' was archived"
+        )
+        
         return _row_to_project_out(archived_row, managers_map)
     except HTTPException:
         raise

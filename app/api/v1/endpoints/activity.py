@@ -22,30 +22,40 @@ async def get_activity(
 ) -> List[ActivityOut]:
     """
     Retrieve a chronological feed of recent activity events.
-    Returns empty list until the activity_logs table is created in the database.
     """
     try:
+        # Join users table to get user info
         resp = (
             _db()
             .table("activity_logs")
-            .select("*")
+            .select("*, users(id, name, email)")
             .order("created_at", desc=True)
             .limit(limit)
             .execute()
         )
         rows = resp.data or []
-        return [
-            ActivityOut(
-                id=r["id"],
-                actor_id=r.get("actor_id", ""),
-                actor_name=r.get("actor_name", ""),
+        
+        results = []
+        for r in rows:
+            user_data = None
+            if r.get("users"):
+                user_data = {
+                    "id": r["users"].get("id", ""),
+                    "full_name": r["users"].get("name", ""),
+                    "email": r["users"].get("email", ""),
+                }
+
+            results.append(ActivityOut(
+                id=str(r["id"]),
+                user_id=r.get("user_id"),
                 action=r.get("action", ""),
-                resource_type=r.get("resource_type", ""),
-                resource_id=r.get("resource_id"),
-                resource_name=r.get("resource_name"),
-                timestamp=r.get("created_at", r.get("timestamp", "")),
-            )
-            for r in rows
-        ]
-    except Exception:
+                entity_type=r.get("entity_type", ""),
+                entity_id=r.get("entity_id"),
+                description=r.get("description", ""),
+                created_at=r.get("created_at", ""),
+                user=user_data
+            ))
+        return results
+    except Exception as exc:
+        print(f"Error fetching activity: {exc}")
         return []
