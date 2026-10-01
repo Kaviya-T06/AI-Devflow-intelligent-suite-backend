@@ -91,33 +91,108 @@ def _row_to_task_out(r: dict) -> TaskOut:
 
 def list_tasks_service(
     current_user: UserOut,
+    project_id: Optional[str] = None,
 ) -> List[TaskOut]:
     """
     List tasks based on caller's role:
-    - Developer: View their own assigned tasks.
-    - Admin/Project Manager: Not implemented for this milestone (but could view all).
+    - Developer: View their own assigned tasks only.
+    - Project Manager: View tasks for their managed projects (optionally filtered by project_id).
+    - Admin: View all tasks (optionally filtered by project_id).
     """
     try:
         query = _db().table("tasks").select("*, projects(name), users(name)")
 
-        # Developer can only see their own tasks
-        print(f"DEBUG: list_tasks_service called by user={current_user.id}, role={current_user.role}")
         if current_user.role.value == RoleEnum.DEVELOPER.value:
-            print(f"DEBUG: Filtering tasks for assigned_to={current_user.id}")
+            # Developer: only their own tasks
             query = query.eq("assigned_to", current_user.id)
+
+        elif current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
+            # PM: tasks in projects they manage
+            pm_projects_resp = (
+                _db()
+                .table("projects")
+                .select("id")
+                .eq("project_manager_id", current_user.id)
+                .execute()
+            )
+            pm_project_ids = [str(p["id"]) for p in (pm_projects_resp.data or [])]
+
+            if not pm_project_ids:
+                return []
+
+            if project_id:
+                # Validate the requested project_id belongs to this PM
+                if project_id not in pm_project_ids:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="You do not have permission to view tasks for this project.",
+                    )
+                query = query.eq("project_id", project_id)
+            else:
+                query = query.in_("project_id", pm_project_ids)
+
+        else:
+            # Admin: all tasks, optionally filtered by project
+            if project_id:
+                query = query.eq("project_id", project_id)
 
         query = query.order("created_at", desc=True)
         resp = query.execute()
         rows = resp.data or []
-        print(f"DEBUG: fetched {len(rows)} tasks")
-
         return [_row_to_task_out(r) for r in rows]
 
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while fetching tasks: {str(exc)}",
         )
+
+
+def _recalculate_project_status(project_id: str):
+    """
+    Automatically set project status based on task completion rules:
+    - No tasks or all TODO → PLANNING (if not ON_HOLD or ARCHIVED)
+    - At least one IN_PROGRESS or REVIEW task → ACTIVE (if not ON_HOLD or ARCHIVED)
+    - All tasks COMPLETED → COMPLETED (if not ON_HOLD or ARCHIVED)
+    Does NOT overwrite ON_HOLD or ARCHIVED (manually controlled states).
+    """
+    if not project_id:
+        return
+    try:
+        # Get current project status
+        proj_resp = _db().table("projects").select("status").eq("id", project_id).limit(1).execute()
+        if not proj_resp.data:
+            return
+        current_status = str(proj_resp.data[0].get("status", "planning")).lower()
+
+        # Do not override manually-controlled states
+        if current_status in ("on_hold", "archived"):
+            return
+
+        # Get tasks
+        tasks_resp = _db().table("tasks").select("status").eq("project_id", project_id).execute()
+        tasks = tasks_resp.data or []
+
+        if not tasks:
+            new_status = "planning"
+        else:
+            statuses = [(t.get("status") or "TODO").upper() for t in tasks]
+            all_completed = all(s == "COMPLETED" for s in statuses)
+            has_active = any(s in ("IN_PROGRESS", "REVIEW") for s in statuses)
+
+            if all_completed:
+                new_status = "completed"
+            elif has_active:
+                new_status = "active"
+            else:
+                new_status = "planning"
+
+        if new_status != current_status:
+            _db().table("projects").update({"status": new_status}).eq("id", project_id).execute()
+    except Exception as exc:
+        print(f"Error recalculating project status for {project_id}: {exc}")
 
 
 def get_task_by_id_service(
@@ -127,6 +202,8 @@ def get_task_by_id_service(
     """
     Retrieve task by ID:
     - Developer: View only if assigned_to == current_user.id
+    - Project Manager: View if task's project is managed by them
+    - Admin: View any task
     """
     try:
         resp = _db().table("tasks").select("*, projects(name), users(name)").eq("id", task_id).limit(1).execute()
@@ -143,6 +220,18 @@ def get_task_by_id_service(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You do not have permission to access this task.",
                 )
+        elif current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
+            # Verify task belongs to a project managed by this PM
+            task_project_id = task_row.get("project_id")
+            if task_project_id:
+                proj_resp = _db().table("projects").select("project_manager_id").eq("id", task_project_id).limit(1).execute()
+                if proj_resp.data:
+                    proj_pm = proj_resp.data[0].get("project_manager_id")
+                    if str(proj_pm) != str(current_user.id):
+                        raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You do not have permission to access this task.",
+                        )
 
         return _row_to_task_out(task_row)
 
@@ -153,6 +242,8 @@ def get_task_by_id_service(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while retrieving task: {str(exc)}",
         )
+
+
 
 
 def update_task_status_service(
@@ -195,6 +286,18 @@ def update_task_status_service(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to modify this task.",
             )
+    elif current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
+        # PM can only edit tasks in their managed projects
+        task_project_id = existing_task.get("project_id")
+        if task_project_id:
+            proj_resp = _db().table("projects").select("project_manager_id").eq("id", task_project_id).limit(1).execute()
+            if proj_resp.data:
+                proj_pm = proj_resp.data[0].get("project_manager_id")
+                if str(proj_pm) != str(current_user.id):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="You do not have permission to modify tasks outside your managed projects.",
+                    )
 
     update_fields = {}
     current_time = datetime.now(timezone.utc).isoformat()
@@ -227,6 +330,7 @@ def update_task_status_service(
             update_fields["completed_at"] = current_time
 
     # Admins/Managers can update other fields too
+    old_assigned_to = existing_task.get("assigned_to")
     if current_user.role in (RoleEnum.ADMIN, RoleEnum.PROJECT_MANAGER):
         if payload.title is not None:
             update_fields["title"] = payload.title
@@ -252,7 +356,7 @@ def update_task_status_service(
                 detail="Task update failed in database.",
             )
         updated_row = resp.data[0]
-        
+
         # We need the joined data for the response
         updated_row["projects"] = existing_task.get("projects")
         updated_row["users"] = existing_task.get("users")
@@ -267,7 +371,7 @@ def update_task_status_service(
                 action = "TASK_COMPLETED"
             else:
                 action = "TASK_STATUS_CHANGED"
-                
+
             log_activity(
                 user_id=current_user.id,
                 action=action,
@@ -275,19 +379,31 @@ def update_task_status_service(
                 entity_id=updated_row["id"],
                 description=f"Task '{updated_row['title']}' moved to {updated_row['status']}"
             )
-        elif len(update_fields) > 0 and current_user.role in (RoleEnum.ADMIN, RoleEnum.PROJECT_MANAGER):
+
+        # Log reassignment if assigned_to changed
+        if "assigned_to" in update_fields and update_fields["assigned_to"] != old_assigned_to:
             log_activity(
                 user_id=current_user.id,
-                action="TASK_UPDATED",
+                action="TASK_ASSIGNED",
                 entity_type="task",
                 entity_id=updated_row["id"],
-                description=f"Task '{updated_row['title']}' updated"
+                description=f"Task '{updated_row['title']}' reassigned"
             )
+        elif len(update_fields) > 0 and current_user.role in (RoleEnum.ADMIN, RoleEnum.PROJECT_MANAGER):
+            if "status" not in update_fields and "assigned_to" not in update_fields:
+                log_activity(
+                    user_id=current_user.id,
+                    action="TASK_UPDATED",
+                    entity_type="task",
+                    entity_id=updated_row["id"],
+                    description=f"Task '{updated_row['title']}' updated"
+                )
 
-        # Recalculate project progress if status changed
+        # Recalculate project progress and auto-update project status when task status changes
         if "status" in update_fields:
             if existing_task.get("project_id"):
                 _recalculate_project_progress(existing_task["project_id"])
+                _recalculate_project_status(existing_task["project_id"])
 
         # Refetch with joins to ensure accurate joined data if project/user changed
         return get_task_by_id_service(updated_row["id"], current_user)
@@ -306,13 +422,29 @@ def create_task_service(
 ) -> TaskOut:
     """
     Create a new task.
-    Admins and Managers can create tasks.
+    Admins can create tasks for any project.
+    Project Managers can only create tasks for their managed projects.
     """
     if current_user.role not in (RoleEnum.ADMIN, RoleEnum.PROJECT_MANAGER):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only Admins and Managers can create tasks.",
         )
+
+    # PM can only create tasks in their managed projects
+    if current_user.role.value == RoleEnum.PROJECT_MANAGER.value and payload.project_id:
+        proj_resp = _db().table("projects").select("project_manager_id").eq("id", payload.project_id).limit(1).execute()
+        if not proj_resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project not found.",
+            )
+        proj_pm = proj_resp.data[0].get("project_manager_id")
+        if str(proj_pm) != str(current_user.id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only create tasks in projects you manage.",
+            )
 
     try:
         new_task = {
@@ -324,18 +456,19 @@ def create_task_service(
             "assigned_to": payload.assigned_to if payload.assigned_to else None,
             "due_date": payload.due_date.isoformat() if payload.due_date else None,
         }
-        
+
         resp = _db().table("tasks").insert(new_task).execute()
         if not resp.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to insert task.",
             )
-        
+
         created_row = resp.data[0]
-        
+
         if created_row.get("project_id"):
             _recalculate_project_progress(created_row["project_id"])
+            _recalculate_project_status(created_row["project_id"])
 
         # Log Activity
         log_activity(
@@ -345,10 +478,10 @@ def create_task_service(
             entity_id=created_row["id"],
             description=f"Task '{created_row['title']}' created"
         )
-        
+
         # Fetch the complete row with joins
         return get_task_by_id_service(created_row["id"], current_user)
-        
+
     except HTTPException:
         raise
     except Exception as exc:
@@ -392,6 +525,7 @@ def delete_task_service(
         
         if deleted_row.get("project_id"):
             _recalculate_project_progress(deleted_row["project_id"])
+            _recalculate_project_status(deleted_row["project_id"])
             
     except HTTPException:
         raise

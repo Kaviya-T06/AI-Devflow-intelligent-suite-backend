@@ -2,9 +2,9 @@
 Tasks router — strictly interacts with public.tasks via task_service.
 Enforces Role-Based Access Control and automatic timestamping.
 """
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 
 from app.api.deps import get_current_user
 import app.schemas.task
@@ -23,13 +23,17 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 @router.get("", response_model=List[TaskOut], summary="List all tasks")
 async def list_tasks(
+    project_id: Optional[str] = Query(None, description="Filter tasks by project UUID"),
     current_user: UserOut = Depends(get_current_user),
 ) -> List[TaskOut]:
     """
     Retrieve tasks from the database:
     - Developer: View their own assigned tasks.
+    - Project Manager: View tasks for managed projects (optionally filtered by project_id).
+    - Admin: View all tasks (optionally filtered by project_id).
     """
-    return list_tasks_service(current_user=current_user)
+    return list_tasks_service(current_user=current_user, project_id=project_id)
+
 
 
 @router.get("/{task_id}", response_model=TaskOut, summary="Get task by ID")
