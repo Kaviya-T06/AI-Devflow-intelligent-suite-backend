@@ -42,9 +42,10 @@ api_router.include_router(settings_router)
 # ---------------------------------------------------------------------------
 # Future routers (not yet implemented)
 # ---------------------------------------------------------------------------
-# from app.api.v1.endpoints.github import router as github_router
+from app.api.v1.endpoints.github import router as github_router
 # from app.api.v1.endpoints.jira import router as jira_router
 from app.api.v1.endpoints.analytics import router as analytics_router
 # from app.api.v1.endpoints.ai_insights import router as ai_router
 
 api_router.include_router(analytics_router)
+api_router.include_router(github_router)
