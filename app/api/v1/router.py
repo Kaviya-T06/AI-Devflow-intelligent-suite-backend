@@ -21,6 +21,7 @@ from app.api.v1.endpoints.workflow_risks import router as workflow_risks_router
 from app.api.v1.endpoints.repositories import router as repositories_router
 from app.api.v1.endpoints.settings import router as settings_router
 from app.api.v1.endpoints.dashboard import router as dashboard_router
+from app.api.v1.endpoints.continuity import router as continuity_router
 
 api_router = APIRouter()
 
@@ -38,6 +39,7 @@ api_router.include_router(activity_router)
 api_router.include_router(workflow_risks_router)
 api_router.include_router(repositories_router)
 api_router.include_router(settings_router)
+api_router.include_router(continuity_router)
 
 # ---------------------------------------------------------------------------
 # Future routers (not yet implemented)
