@@ -43,6 +43,15 @@ class DashboardStats(BaseModel):
     average_progress: int = 0
     recent_projects: List[RecentProject] = []
 
+    # Risk Metrics Breakdown
+    high_risks: int = 0
+    medium_risks: int = 0
+    low_risks: int = 0
+    overdue_tasks_risks: int = 0
+    review_delay_risks: int = 0
+    stuck_tasks_risks: int = 0
+    project_delay_risks: int = 0
+
 
 # ---------------------------------------------------------------------------
 # PM-specific models
@@ -215,11 +224,39 @@ async def get_dashboard_stats(current_user: UserOut = Depends(get_current_user))
             progress=p.get("progress") or 0
         ))
 
+    # Fetch workflow risks to compute breakdown
+    try:
+        from app.services.workflow_risk_service import detect_and_update_risks
+        detect_and_update_risks()
+        
+        risks_query = _db().table("workflow_risks").select("level, risk_type").eq("is_resolved", False)
+        if role == "project_manager":
+            if projects_data:
+                proj_ids = [str(p["id"]) for p in projects_data]
+                risks_query = risks_query.in_("project_id", proj_ids)
+        elif role == "developer":
+            risks_query = risks_query.eq("user_id", user_id)
+            
+        risks_resp = risks_query.execute()
+        open_risks_data = risks_resp.data or []
+    except Exception as exc:
+        print(f"Error fetching risks for dashboard: {exc}")
+        open_risks_data = []
+
+    high_risks = sum(1 for r in open_risks_data if str(r.get("level", "")).lower() == "high")
+    medium_risks = sum(1 for r in open_risks_data if str(r.get("level", "")).lower() == "medium")
+    low_risks = sum(1 for r in open_risks_data if str(r.get("level", "")).lower() == "low")
+    
+    overdue_tasks_risks = sum(1 for r in open_risks_data if r.get("risk_type") == "OVERDUE_TASK")
+    review_delay_risks = sum(1 for r in open_risks_data if r.get("risk_type") == "REVIEW_DELAY")
+    stuck_tasks_risks = sum(1 for r in open_risks_data if r.get("risk_type") == "STUCK_TASK")
+    project_delay_risks = sum(1 for r in open_risks_data if r.get("risk_type") == "PROJECT_DELAY")
+
     return DashboardStats(
         totalUsers=total_users,
         activeProjects=active_projects,
-        openTasks=_count_if_exists("tasks", {"status": "open"}),
-        openRisks=_count_if_exists("workflow_risks", {"is_resolved": False}),
+        openTasks=_count_if_exists("tasks", {"status": "TODO"}) + _count_if_exists("tasks", {"status": "IN_PROGRESS"}), # using TODO + IN_PROGRESS 
+        openRisks=len(open_risks_data),
         connectedRepos=_count_if_exists("repositories"),
 
         total_projects=total_projects,
@@ -229,7 +266,15 @@ async def get_dashboard_stats(current_user: UserOut = Depends(get_current_user))
         planning_projects=planning_projects,
         archived_projects=archived_projects,
         average_progress=avg_prog,
-        recent_projects=recent_projects
+        recent_projects=recent_projects,
+        
+        high_risks=high_risks,
+        medium_risks=medium_risks,
+        low_risks=low_risks,
+        overdue_tasks_risks=overdue_tasks_risks,
+        review_delay_risks=review_delay_risks,
+        stuck_tasks_risks=stuck_tasks_risks,
+        project_delay_risks=project_delay_risks
     )
 
 
