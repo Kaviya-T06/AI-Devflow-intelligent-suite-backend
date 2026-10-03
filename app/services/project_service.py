@@ -551,3 +551,46 @@ def delete_project_service(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database error while archiving project: {str(exc)}",
         )
+
+def get_project_history_service(
+    project_id: str,
+    current_user: UserOut,
+) -> List[Dict]:
+    """
+    Fetch activity logs associated with a project.
+    Only PMs of this project or Admins can view.
+    """
+    # 1. Authorize
+    get_project_by_id_service(project_id, current_user)
+    
+    try:
+        resp = _db().table("activity_logs").select(
+            "id, user_id, action, entity_type, entity_id, project_id, description, metadata, created_at, "
+            "users(id, name, email)"
+        ).eq("project_id", project_id).order("created_at", desc=True).execute()
+        
+        results = []
+        for row in resp.data:
+            user_data = row.get("users") or {}
+            results.append({
+                "id": str(row["id"]),
+                "user_id": str(row["user_id"]) if row.get("user_id") else None,
+                "action": row["action"],
+                "entity_type": row["entity_type"],
+                "entity_id": str(row["entity_id"]) if row.get("entity_id") else None,
+                "project_id": str(row["project_id"]) if row.get("project_id") else None,
+                "description": row["description"],
+                "metadata": row.get("metadata"),
+                "created_at": row["created_at"],
+                "user": {
+                    "id": str(user_data.get("id")) if user_data.get("id") else "",
+                    "full_name": user_data.get("name", ""),
+                    "email": user_data.get("email", "")
+                } if user_data.get("id") else None
+            })
+        return results
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch project history: {str(exc)}",
+        )
