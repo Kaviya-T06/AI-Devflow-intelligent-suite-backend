@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
     APP_SECRET_KEY: str = "change-me"
+    
+    # ------------------------------------------------------------------
+    # AI Integration
+    # ------------------------------------------------------------------
+    AI_API_KEY: str = ""
 
     # ------------------------------------------------------------------
     # CORS
