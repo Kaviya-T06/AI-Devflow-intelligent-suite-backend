@@ -40,13 +40,19 @@ class RiskLevel(str, Enum):
 
 class WorkflowRiskOut(BaseModel):
     id: str
+    risk_type: str
     title: str
     description: str
-    level: RiskLevel
+    severity: RiskLevel
     project_id: Optional[str] = None
     project_name: Optional[str] = None
-    detected_at: str
+    task_id: Optional[str] = None
+    status: str
     is_resolved: bool = False
+    detected_at: str
+    resolved_at: Optional[str] = None
+    created_at: str
+    updated_at: str
 
 
 # ---------------------------------------------------------------------------
