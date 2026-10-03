@@ -56,6 +56,28 @@ async def _build_project_context(project_id: str) -> str:
     # 4. Fetch GitHub
     github_data = await _fetch_github_data(project_id)
     
+    # 5. Fetch Workflow Risks directly from workflow_risks table
+    try:
+        risks_resp = _db().table("workflow_risks").select("*").eq("project_id", project_id).execute()
+        all_risks = risks_resp.data or []
+    except Exception:
+        all_risks = []
+
+    open_risks = [r for r in all_risks if not r.get("is_resolved") and (r.get("status") or "").upper() != "RESOLVED"]
+    resolved_risks = [r for r in all_risks if r.get("is_resolved") or (r.get("status") or "").upper() == "RESOLVED"]
+
+    severity_prio = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    def risk_sort_key(r):
+        lvl = str(r.get("level") or "MEDIUM").upper()
+        prio = severity_prio.get(lvl, 4)
+        det = str(r.get("detected_at") or r.get("created_at") or "")
+        return (prio, det)
+
+    try:
+        open_risks.sort(key=risk_sort_key)
+    except Exception:
+        pass
+
     # Structure Context
     context = []
     context.append(f"Project Name: {project.get('name')}")
@@ -85,6 +107,43 @@ async def _build_project_context(project_id: str) -> str:
         context.append("Recent Issues:")
         for i in github_data['issues']:
             context.append(f" - [{i['state']}] {i['title']}")
+
+    context.append("\nVERIFIED WORKFLOW RISKS:")
+    context.append("Open Risks:")
+    if open_risks:
+        for r in open_risks:
+            r_id = r.get("id", "")
+            r_type = r.get("risk_type", "UNKNOWN")
+            r_level = r.get("level", "Medium")
+            r_status = r.get("status", "OPEN")
+            r_title = r.get("title", "")
+            r_detected = r.get("detected_at") or r.get("created_at") or "Unknown"
+            r_desc = r.get("description", "")
+            r_task = r.get("task_id")
+            task_info = f" | Task ID: {r_task}" if r_task else ""
+            title_info = f" - Title: {r_title}" if r_title else ""
+            context.append(f"- [Risk ID: {r_id}] Type: {r_type} | Severity: {r_level} | Status: {r_status} | Detected: {r_detected}{task_info}{title_info}\n  Description: {r_desc}")
+    else:
+        context.append("- None: No active open workflow risks detected for this project.")
+
+    context.append("\nResolved Risks:")
+    if resolved_risks:
+        resolved_sorted = sorted(resolved_risks, key=lambda r: str(r.get("resolved_at") or r.get("updated_at") or ""), reverse=True)[:10]
+        for r in resolved_sorted:
+            r_id = r.get("id", "")
+            r_type = r.get("risk_type", "UNKNOWN")
+            r_level = r.get("level", "Medium")
+            r_status = r.get("status", "RESOLVED")
+            r_title = r.get("title", "")
+            r_detected = r.get("detected_at") or r.get("created_at") or "Unknown"
+            r_resolved = r.get("resolved_at") or r.get("updated_at") or "Unknown"
+            r_desc = r.get("description", "")
+            r_task = r.get("task_id")
+            task_info = f" | Task ID: {r_task}" if r_task else ""
+            title_info = f" - Title: {r_title}" if r_title else ""
+            context.append(f"- [Risk ID: {r_id}] Type: {r_type} | Severity: {r_level} | Status: {r_status} | Detected: {r_detected} | Resolved: {r_resolved}{task_info}{title_info}\n  Description: {r_desc}")
+    else:
+        context.append("- None")
             
     return "\n".join(context)
 
@@ -101,6 +160,7 @@ async def generate_continuity_summary_service(project_id: str, current_user: Use
     2. Do NOT invent tasks, developers, commits, PRs, issues, or blockers.
     3. Do NOT falsely claim a GitHub commit belongs to a specific DevFlow task unless a relationship is obvious (like a task ID in a commit message).
     4. If information is unavailable, state it clearly (e.g., "No GitHub data available").
+    5. Rely strictly on the VERIFIED WORKFLOW RISKS section for identifying known risks, blockers, and overdue work. Do NOT invent or infer risks not present in that section. If there are no open risks, state that explicitly.
     
     PROJECT CONTEXT:
     {context_str}
@@ -157,7 +217,8 @@ async def ask_continuity_question_service(project_id: str, question: str, curren
     VERY IMPORTANT RULES:
     1. Use ONLY the supplied project context.
     2. Do NOT invent information.
-    3. If the answer is not in the context, say "The available project data is insufficient to answer this question."
+    3. Base answers regarding risks, blockers, and bottlenecks strictly on the VERIFIED WORKFLOW RISKS section.
+    4. If the answer is not in the context, say "The available project data is insufficient to answer this question."
     
     PROJECT CONTEXT:
     {context_str}

@@ -15,15 +15,13 @@ from app.db.supabase_client import get_supabase_client
 
 router = APIRouter(prefix="/github", tags=["GitHub Integration"])
 from app.schemas.user import UserOut
+from app.services.project_service import get_project_by_id_service
 
 def check_project_access(project_id: str, user: UserOut, db) -> None:
-    # Admin/Manager check
-    if user.role in ["admin", "project_manager"]:
-        return
-    
-    # Developers could be assigned tasks, but for simplicity, allow read if they are active
-    # (The post/delete endpoints already enforce ADMIN/MANAGER)
-    pass
+    # Use existing DevFlow project service to enforce RBAC
+    # get_project_by_id_service will raise appropriate HTTP exceptions (e.g. 403, 404)
+    # if the user is unauthorized or if the project doesn't exist.
+    get_project_by_id_service(project_id, user)
 
 @router.get("/projects/{project_id}/repository", response_model=Optional[GitHubRepositoryOut])
 async def get_project_repository(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -65,6 +63,8 @@ async def connect_repository(project_id: str, repo: GitHubRepositoryCreate, user
     try:
         url = f"https://api.github.com/repos/{full_name}"
         repo_data = await fetch_github_api(url)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to access GitHub repository. Make sure it exists and is public. Details: {str(e)}")
         
@@ -117,11 +117,31 @@ async def disconnect_repository(project_id: str, user: UserOut = Depends(get_cur
     
     return {"message": "Repository disconnected successfully"}
 
+from app.core.config import settings
+
 async def fetch_github_api(url: str):
-    async with httpx.AsyncClient(headers={"Accept": "application/vnd.github.v3+json"}) as client:
-        response = await client.get(url)
-        response.raise_for_status()
-        return response.json()
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    if hasattr(settings, "GITHUB_TOKEN") and settings.GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN}"
+
+    async with httpx.AsyncClient(headers=headers) as client:
+        try:
+            response = await client.get(url)
+            
+            if response.status_code == 401:
+                raise HTTPException(status_code=502, detail="GitHub API authentication failed.")
+            elif response.status_code == 403:
+                if response.headers.get("x-ratelimit-remaining") == "0":
+                    raise HTTPException(status_code=502, detail="GitHub API rate limit exceeded.")
+                else:
+                    raise HTTPException(status_code=502, detail="GitHub API forbidden.")
+            elif response.status_code == 404:
+                raise HTTPException(status_code=404, detail="GitHub resource not found.")
+                
+            response.raise_for_status()
+            return response.json()
+        except httpx.RequestError:
+            raise HTTPException(status_code=502, detail="Network error communicating with GitHub API.")
 
 @router.post("/projects/{project_id}/repository/sync", response_model=GitHubRepositoryOut)
 async def sync_repository(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -168,6 +188,8 @@ async def get_commits(project_id: str, user: UserOut = Depends(get_current_user)
             )
             for c in commits_data
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch commits: {str(e)}")
 
@@ -196,6 +218,8 @@ async def get_pull_requests(project_id: str, user: UserOut = Depends(get_current
             )
             for pr in prs_data
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch pull requests: {str(e)}")
 
@@ -224,6 +248,8 @@ async def get_issues(project_id: str, user: UserOut = Depends(get_current_user))
             )
             for issue in issues_data if "pull_request" not in issue
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch issues: {str(e)}")
 
@@ -247,5 +273,7 @@ async def get_branches(project_id: str, user: UserOut = Depends(get_current_user
             )
             for b in branches_data
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to fetch branches: {str(e)}")
