@@ -13,11 +13,12 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
         raise HTTPException(status_code=500, detail="AI_API_KEY is not configured.")
 
     # Using Gemini Flash Latest as standard fast model
-    model = "gemini-3.5-flash"
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    model = "gemini-3.8-flash"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-goog-api-key": api_key
     }
 
     payload = {
@@ -41,5 +42,10 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
                 if parts:
                     return parts[0]["text"]
             return ""
+    except httpx.HTTPStatusError as e:
+        error_msg = f"HTTP {e.response.status_code} - {e.response.text}"
+        safe_msg = error_msg.replace(api_key, "***")
+        raise HTTPException(status_code=502, detail=f"Failed to communicate with AI provider: {safe_msg}")
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to communicate with AI provider: {str(e)}")
+        safe_error = str(e).replace(api_key, "***")
+        raise HTTPException(status_code=502, detail=f"Failed to communicate with AI provider: {safe_error}")

@@ -17,9 +17,11 @@ from app.services.project_service import (
     create_project_service,
     delete_project_service,
     get_project_by_id_service,
+    get_project_history_service,
     list_projects_service,
     update_project_service,
 )
+from app.schemas.common import ActivityOut
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -56,6 +58,21 @@ async def get_project(
     Retrieve details for a specific project.
     """
     return get_project_by_id_service(
+        project_id=project_id,
+        current_user=current_user,
+    )
+
+
+@router.get("/{project_id}/history", response_model=List[ActivityOut], summary="Get project history")
+async def get_project_history(
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> List[ActivityOut]:
+    """
+    Retrieve activity log history for a specific project.
+    Enforces RBAC: Must be Admin or Project Manager of this project.
+    """
+    return get_project_history_service(
         project_id=project_id,
         current_user=current_user,
     )

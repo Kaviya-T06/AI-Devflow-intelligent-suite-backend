@@ -22,7 +22,9 @@ class ActivityOut(BaseModel):
     action: str
     entity_type: str
     entity_id: Optional[str] = None
+    project_id: Optional[str] = None
     description: str
+    metadata: Optional[Dict[str, Any]] = None
     created_at: str
     user: Optional[UserSummary] = None
 
