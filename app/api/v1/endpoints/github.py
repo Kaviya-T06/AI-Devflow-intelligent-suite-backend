@@ -127,7 +127,7 @@ async def fetch_github_api(url: str):
     async with httpx.AsyncClient(headers=headers) as client:
         try:
             response = await client.get(url)
-            
+
             if response.status_code == 401:
                 raise HTTPException(status_code=502, detail="GitHub API authentication failed.")
             elif response.status_code == 403:
@@ -137,7 +137,7 @@ async def fetch_github_api(url: str):
                     raise HTTPException(status_code=502, detail="GitHub API forbidden.")
             elif response.status_code == 404:
                 raise HTTPException(status_code=404, detail="GitHub resource not found.")
-                
+
             response.raise_for_status()
             return response.json()
         except httpx.RequestError:
