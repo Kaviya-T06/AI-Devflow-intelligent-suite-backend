@@ -1,4 +1,4 @@
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -13,6 +13,7 @@ class ContinuitySummaryOut(BaseModel):
     important_context: str
     what_next_developer_should_know: str
     recommended_next_steps: str
+    raw_context: Optional[Dict[str, Any]] = None
 
 class AIQuestionRequest(BaseModel):
     question: str

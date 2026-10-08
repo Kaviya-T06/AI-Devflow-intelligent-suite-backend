@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from app.db.supabase_client import get_supabase_client
@@ -6,6 +7,7 @@ from app.schemas.user import UserOut
 from app.schemas.continuity import ContinuitySummaryOut
 from app.services.ai_service import ask_llm
 from app.services.activity_service import log_activity
+from app.api.v1.endpoints.github import fetch_github_api
 import httpx
 
 def _db():
@@ -19,26 +21,32 @@ async def _fetch_github_data(project_id: str):
         repo = repo_resp.data[0]
         full_name = repo['full_name']
         
-        async with httpx.AsyncClient(headers={"Accept": "application/vnd.github.v3+json"}) as client:
-            commits_res = await client.get(f"https://api.github.com/repos/{full_name}/commits?per_page=5")
-            commits = commits_res.json() if commits_res.status_code == 200 else []
+        try:
+            commits = await fetch_github_api(f"https://api.github.com/repos/{full_name}/commits?per_page=5")
+        except Exception:
+            commits = []
             
-            prs_res = await client.get(f"https://api.github.com/repos/{full_name}/pulls?state=all&per_page=5")
-            prs = prs_res.json() if prs_res.status_code == 200 else []
+        try:
+            prs = await fetch_github_api(f"https://api.github.com/repos/{full_name}/pulls?state=all&per_page=5")
+        except Exception:
+            prs = []
             
-            issues_res = await client.get(f"https://api.github.com/repos/{full_name}/issues?state=all&per_page=5")
-            issues = [i for i in (issues_res.json() if issues_res.status_code == 200 else []) if "pull_request" not in i]
+        try:
+            issues_res = await fetch_github_api(f"https://api.github.com/repos/{full_name}/issues?state=all&per_page=5")
+            issues = [i for i in issues_res if "pull_request" not in i]
+        except Exception:
+            issues = []
             
         return {
             "repository": full_name,
-            "commits": [{"message": c["commit"]["message"], "author": c["commit"]["author"]["name"], "date": c["commit"]["author"]["date"]} for c in commits if isinstance(c, dict) and "commit" in c],
-            "pull_requests": [{"title": p["title"], "state": p["state"], "author": p["user"]["login"]} for p in prs if isinstance(p, dict) and "title" in p],
+            "commits": [{"sha": c.get("sha", ""), "message": c["commit"]["message"], "author": c["commit"]["author"]["name"], "date": c["commit"]["author"]["date"]} for c in commits if isinstance(c, dict) and "commit" in c],
+            "pull_requests": [{"title": p["title"], "body": p.get("body", ""), "state": p["state"], "author": p["user"]["login"]} for p in prs if isinstance(p, dict) and "title" in p],
             "issues": [{"title": i["title"], "state": i["state"]} for i in issues if isinstance(i, dict) and "title" in i]
         }
     except Exception:
         return None
 
-async def _build_project_context(project_id: str) -> str:
+async def _build_project_context(project_id: str) -> tuple[str, dict]:
     # 1. Fetch Project
     proj_resp = _db().table("projects").select("*, users(name)").eq("id", project_id).execute()
     if not proj_resp.data:
@@ -55,6 +63,18 @@ async def _build_project_context(project_id: str) -> str:
     
     # 4. Fetch GitHub
     github_data = await _fetch_github_data(project_id)
+    
+    # 5. Fetch Workflow Risks
+    risks_resp = _db().table("workflow_risks").select("*").eq("project_id", project_id).execute()
+    risks = risks_resp.data or []
+    
+    open_risks = [r for r in risks if not r.get("is_resolved")]
+    severity_order = {"Critical": 0, "High": 1, "Medium": 2, "Low": 3}
+    open_risks.sort(key=lambda r: (severity_order.get(r.get("level", "Medium"), 2), r.get("detected_at", "")))
+    
+    resolved_risks = [r for r in risks if r.get("is_resolved")]
+    resolved_risks.sort(key=lambda r: r.get("resolved_at", ""), reverse=True)
+    resolved_risks = resolved_risks[:10]
     
     # Structure Context
     context = []
@@ -74,23 +94,94 @@ async def _build_project_context(project_id: str) -> str:
         user_name = a.get("users", {}).get("name") if isinstance(a.get("users"), dict) else (a.get("users")[0].get("name") if isinstance(a.get("users"), list) and len(a.get("users")) > 0 else "Unknown")
         context.append(f"- {user_name} ({a.get('action')}): {a.get('description')} at {a.get('created_at')}")
         
+    verified_mappings = []
+    unmapped_commits = []
+    unmapped_prs = []
+    
     if github_data:
         context.append(f"\nGITHUB REPOSITORY: {github_data['repository']}")
-        context.append("Recent Commits:")
+        
+        valid_task_ids = {str(t["id"]).lower(): t for t in tasks if t.get("id")}
+        uuid_pattern = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', re.IGNORECASE)
+        
         for c in github_data['commits']:
-            context.append(f" - {c['author']}: {c['message']} ({c['date']})")
-        context.append("Recent PRs:")
+            msg = c['message']
+            found_uuids = uuid_pattern.findall(msg)
+            mapped = False
+            for uid in found_uuids:
+                uid_lower = uid.lower()
+                if uid_lower in valid_task_ids:
+                    t = valid_task_ids[uid_lower]
+                    sha = c.get('sha', '')[:7]
+                    verified_mappings.append(f"- Commit {sha} -> DevFlow Task: {uid_lower} | Task Title: {t.get('title')} | Mapping Source: commit message | Verified: true\n  Commit Message: {msg}")
+                    mapped = True
+                    break
+            if not mapped:
+                unmapped_commits.append(c)
+
         for pr in github_data['pull_requests']:
+            text = f"{pr['title']} {pr.get('body', '')}"
+            found_uuids = uuid_pattern.findall(text)
+            mapped = False
+            for uid in found_uuids:
+                uid_lower = uid.lower()
+                if uid_lower in valid_task_ids:
+                    t = valid_task_ids[uid_lower]
+                    verified_mappings.append(f"- Pull Request [{pr['state']}] '{pr['title']}' -> DevFlow Task: {uid_lower} | Task Title: {t.get('title')} | Mapping Source: PR title/body | Verified: true")
+                    mapped = True
+                    break
+            if not mapped:
+                unmapped_prs.append(pr)
+                
+        context.append("\nVERIFIED GITHUB TASK MAPPINGS:")
+        if verified_mappings:
+            context.extend(verified_mappings)
+        else:
+            context.append("- None")
+            
+        context.append("\nUNMAPPED GITHUB ACTIVITY (Project-level only, do NOT assign to tasks):")
+        context.append("Unmapped Commits:")
+        for c in unmapped_commits:
+            context.append(f" - {c['author']}: {c['message']} ({c['date']})")
+        context.append("Unmapped PRs:")
+        for pr in unmapped_prs:
             context.append(f" - [{pr['state']}] {pr['title']} by {pr['author']}")
-        context.append("Recent Issues:")
+        context.append("Issues:")
         for i in github_data['issues']:
             context.append(f" - [{i['state']}] {i['title']}")
             
-    return "\n".join(context)
-
+    context.append("\nVERIFIED WORKFLOW RISKS:")
+    if not open_risks and not resolved_risks:
+        context.append("- None: No active open workflow risks detected for this project.")
+    else:
+        if not open_risks:
+            context.append("Open Risks:")
+            context.append("- None: No active open workflow risks detected for this project.")
+        else:
+            context.append("Open Risks:")
+            for r in open_risks:
+                context.append(f"- [Risk ID: {r.get('id')}] Type: {r.get('risk_type')} | Severity: {r.get('level')} | Status: {r.get('status')} | Detected: {r.get('detected_at')} | Task ID: {r.get('task_id')}")
+                context.append(f"  Title: {r.get('title')}")
+                context.append(f"  Description: {r.get('description')}")
+                
+        if resolved_risks:
+            context.append("Resolved Risks:")
+            for r in resolved_risks:
+                context.append(f"- [Risk ID: {r.get('id')}] Type: {r.get('risk_type')} | Severity: {r.get('level')} | Status: RESOLVED | Task ID: {r.get('task_id')}")
+            
+    raw_dict = {
+        "project": project,
+        "tasks": tasks,
+        "risks": risks,
+        "github": github_data or {"repository": None, "commits": [], "pull_requests": [], "issues": []},
+        "verified_mappings": verified_mappings,
+        "unmapped_commits": unmapped_commits,
+        "unmapped_prs": unmapped_prs
+    }
+    return "\n".join(context), raw_dict
 
 async def generate_continuity_summary_service(project_id: str, current_user: UserOut) -> ContinuitySummaryOut:
-    context_str = await _build_project_context(project_id)
+    context_str, raw_dict = await _build_project_context(project_id)
     
     prompt = f"""
     You are an AI assistant for the 'AI DevFlow Intelligence Suite'.
@@ -120,13 +211,15 @@ async def generate_continuity_summary_service(project_id: str, current_user: Use
     }}
     """
     
-    llm_response = await ask_llm(prompt, json_response=True)
-    
     try:
+        llm_response = await ask_llm(prompt, json_response=True)
+        
         # Sometimes LLMs wrap JSON in markdown block
         clean_json = llm_response.strip()
         if clean_json.startswith("```json"):
             clean_json = clean_json[7:]
+        if clean_json.startswith("```"):
+            clean_json = clean_json[3:]
         if clean_json.endswith("```"):
             clean_json = clean_json[:-3]
         
@@ -141,14 +234,42 @@ async def generate_continuity_summary_service(project_id: str, current_user: Use
             description="Generated AI Continuity summary"
         )
         
-        # We can insert to a continuity table here if needed. But we'll just return it.
+        parsed["raw_context"] = raw_dict
         return ContinuitySummaryOut(**parsed)
+
     except Exception as e:
-        print(f"Failed to parse JSON from AI: {llm_response}")
-        raise HTTPException(status_code=500, detail="AI provided an invalid summary format.")
+        # Determine error detail — HTTPException.detail is the structured message
+        from fastapi import HTTPException as _HTTPException
+        if isinstance(e, _HTTPException):
+            error_detail = str(e.detail)
+            http_code = e.status_code
+        else:
+            error_detail = str(e)
+            http_code = None
+
+        print(
+            f"[AI Handover] FAILED for project_id={project_id} | "
+            f"HTTPStatus={http_code} | Detail={error_detail}"
+        )
+        
+        # Return graceful fallback with real error detail visible on the page
+        fallback = {
+            "project_overview": "⚠️ AI Summary Temporarily Unavailable",
+            "previous_developer_work": "AI analysis could not be completed. Review the 'Project History' tab manually.",
+            "current_work": "Cannot retrieve AI insights at this time. Refer to the raw project tasks below.",
+            "pending_work": "Check the 'Tasks' dashboard directly to see pending work.",
+            "blocked_overdue_work": "Check the 'Workflow Risks' dashboard for any active blockers.",
+            "recent_github_activity": "Refer to the GitHub integration module for raw commits and PRs.",
+            "known_issues": f"Provider Error: {error_detail}",
+            "important_context": "The backend successfully gathered your project context, but the final AI summarization step failed.",
+            "what_next_developer_should_know": "You can still perform all project operations, browse tasks, and view history manually.",
+            "recommended_next_steps": "Check backend logs for the exact error. Verify AI_API_KEY and AI_MODEL in .env, then try again.",
+            "raw_context": raw_dict
+        }
+        return ContinuitySummaryOut(**fallback)
 
 async def ask_continuity_question_service(project_id: str, question: str, current_user: UserOut) -> str:
-    context_str = await _build_project_context(project_id)
+    context_str, _ = await _build_project_context(project_id)
     
     prompt = f"""
     You are an AI assistant for the 'AI DevFlow Intelligence Suite'.
@@ -166,14 +287,18 @@ async def ask_continuity_question_service(project_id: str, question: str, curren
     {question}
     """
     
-    llm_response = await ask_llm(prompt, json_response=False)
-    
-    log_activity(
-        user_id=current_user.id,
-        action="AI_CONTINUITY_QUESTION_ASKED",
-        entity_type="project",
-        entity_id=project_id,
-        description=f"Asked AI continuity question: {question[:50]}..."
-    )
-    
-    return llm_response.strip()
+    try:
+        llm_response = await ask_llm(prompt, json_response=False)
+        
+        log_activity(
+            user_id=current_user.id,
+            action="AI_CONTINUITY_QUESTION_ASKED",
+            entity_type="project",
+            entity_id=project_id,
+            description=f"Asked AI continuity question: {question[:50]}..."
+        )
+        
+        return llm_response.strip()
+    except Exception as e:
+        error_msg = getattr(e, 'detail', str(e))
+        return f"⚠️ I'm sorry, but I cannot answer that right now because the AI service is temporarily overloaded or you have exceeded your quota.\n\nProvider detail: {error_msg}"

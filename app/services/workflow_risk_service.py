@@ -181,9 +181,9 @@ def detect_and_update_risks():
             for r in inserted.data or []:
                 desc = f"Workflow Risk detected: {r.get('title')}"
                 if r.get("risk_type") == "PROJECT_DELAY":
-                    log_activity(action="RISK_DETECTED", entity_type="project", entity_id=r.get("project_id"), description=desc)
+                    log_activity(user_id=r.get("user_id"), action="RISK_DETECTED", entity_type="project", entity_id=r.get("project_id"), description=desc)
                 else:
-                    log_activity(action="RISK_DETECTED", entity_type="task", entity_id=r.get("task_id"), description=desc)
+                    log_activity(user_id=r.get("user_id"), action="RISK_DETECTED", entity_type="task", entity_id=r.get("task_id"), description=desc)
             
         # Resolve risks that are no longer active
         to_resolve = []
@@ -205,9 +205,9 @@ def detect_and_update_risks():
                 
                 desc = f"Workflow Risk resolved: {r.get('title')}"
                 if r.get("risk_type") == "PROJECT_DELAY":
-                    log_activity(action="RISK_RESOLVED", entity_type="project", entity_id=r.get("project_id"), description=desc)
+                    log_activity(user_id=r.get("user_id"), action="RISK_RESOLVED", entity_type="project", entity_id=r.get("project_id"), description=desc)
                 else:
-                    log_activity(action="RISK_RESOLVED", entity_type="task", entity_id=r.get("task_id"), description=desc)
+                    log_activity(user_id=r.get("user_id"), action="RISK_RESOLVED", entity_type="task", entity_id=r.get("task_id"), description=desc)
                 
     except Exception as exc:
         print(f"Error during risk detection/reconciliation: {exc}")

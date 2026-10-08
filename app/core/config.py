@@ -30,9 +30,12 @@ class Settings(BaseSettings):
     APP_SECRET_KEY: str = "change-me"
     
     # ------------------------------------------------------------------
-    # AI Integration
+    # AI / GitHub Integration
     # ------------------------------------------------------------------
     AI_API_KEY: str = ""
+    AI_MODEL: str = "gemini-3.5-flash"
+    AI_PROVIDER: str = "google-gemini"
+    GITHUB_TOKEN: str = ""
 
     # ------------------------------------------------------------------
     # CORS

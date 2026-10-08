@@ -117,8 +117,14 @@ async def disconnect_repository(project_id: str, user: UserOut = Depends(get_cur
     
     return {"message": "Repository disconnected successfully"}
 
+from app.core.config import settings
+
 async def fetch_github_api(url: str):
-    async with httpx.AsyncClient(headers={"Accept": "application/vnd.github.v3+json"}) as client:
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    if settings.GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN}"
+        
+    async with httpx.AsyncClient(headers=headers) as client:
         response = await client.get(url)
         response.raise_for_status()
         return response.json()
