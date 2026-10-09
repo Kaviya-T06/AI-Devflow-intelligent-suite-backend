@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # AI / GitHub Integration
     # ------------------------------------------------------------------
     AI_API_KEY: str = ""
-    AI_MODEL: str = "gemini-3.5-flash"
+    AI_MODEL: str = "gemini-3.8-flash"
     AI_PROVIDER: str = "google-gemini"
     GITHUB_TOKEN: str = ""
 

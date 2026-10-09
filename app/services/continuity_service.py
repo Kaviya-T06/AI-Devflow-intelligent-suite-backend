@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from app.db.supabase_client import get_supabase_client
 from app.schemas.user import UserOut
-from app.schemas.continuity import ContinuitySummaryOut
+from app.schemas.continuity import ContinuitySummaryOut, ChatMessage
 from app.services.ai_service import ask_llm
 from app.services.activity_service import log_activity
 from app.api.v1.endpoints.github import fetch_github_api
@@ -199,26 +199,7 @@ async def _build_project_context(project_id: str) -> tuple[str, dict]:
             context.append(f"- [Risk ID: {r_id}] Type: {r_type} | Severity: {r_level} | Status: {r_status} | Detected: {r_detected} | Resolved: {r_resolved}{task_info}{title_info}\n  Description: {r_desc}")
     else:
         context.append("- None")
-            
-    context.append("\nVERIFIED WORKFLOW RISKS:")
-    if not open_risks and not resolved_risks:
-        context.append("- None: No active open workflow risks detected for this project.")
-    else:
-        if not open_risks:
-            context.append("Open Risks:")
-            context.append("- None: No active open workflow risks detected for this project.")
-        else:
-            context.append("Open Risks:")
-            for r in open_risks:
-                context.append(f"- [Risk ID: {r.get('id')}] Type: {r.get('risk_type')} | Severity: {r.get('level')} | Status: {r.get('status')} | Detected: {r.get('detected_at')} | Task ID: {r.get('task_id')}")
-                context.append(f"  Title: {r.get('title')}")
-                context.append(f"  Description: {r.get('description')}")
-                
-        if resolved_risks:
-            context.append("Resolved Risks:")
-            for r in resolved_risks:
-                context.append(f"- [Risk ID: {r.get('id')}] Type: {r.get('risk_type')} | Severity: {r.get('level')} | Status: RESOLVED | Task ID: {r.get('task_id')}")
-            
+
     raw_dict = {
         "project": project,
         "tasks": tasks,
@@ -319,21 +300,54 @@ async def generate_continuity_summary_service(project_id: str, current_user: Use
         }
         return ContinuitySummaryOut(**fallback)
 
-async def ask_continuity_question_service(project_id: str, question: str, current_user: UserOut) -> str:
+async def ask_continuity_question_service(
+    project_id: str, 
+    question: str, 
+    current_user: UserOut,
+    messages: Optional[list] = None
+) -> str:
     context_str, _ = await _build_project_context(project_id)
     
+    # Bounded short-term conversation context (max 10 recent messages)
+    MAX_HISTORY = 10
+    recent_messages = (messages or [])[-MAX_HISTORY:]
+    
+    conversation_formatted = []
+    history_items = list(recent_messages)
+    if history_items:
+        last_item = history_items[-1]
+        last_role = getattr(last_item, "role", None) if not isinstance(last_item, dict) else last_item.get("role")
+        last_content = getattr(last_item, "content", None) if not isinstance(last_item, dict) else last_item.get("content")
+        if (last_role or "").lower() == "user" and (last_content or "").strip() == question.strip():
+            history_items = history_items[:-1]
+            
+    for m in history_items:
+        role = getattr(m, "role", None) if not isinstance(m, dict) else m.get("role")
+        content = getattr(m, "content", None) if not isinstance(m, dict) else m.get("content")
+        role_label = "User" if (role or "").lower() == "user" else "Assistant"
+        c = (content or "").strip()
+        if c:
+            conversation_formatted.append(f"{role_label}: {c}")
+            
+    if conversation_formatted:
+        recent_conv_str = "\nRECENT CONVERSATION:\n" + "\n".join(conversation_formatted)
+    else:
+        recent_conv_str = "\nRECENT CONVERSATION:\nNone"
+        
     prompt = f"""
     You are an AI assistant for the 'AI DevFlow Intelligence Suite'.
     The user is asking a question about a project to get continuity/handover information.
     
     VERY IMPORTANT RULES:
-    1. Use ONLY the supplied project context.
+    1. Use ONLY the supplied verified project context as the primary source of truth.
     2. Do NOT invent information.
     3. Base answers regarding risks, blockers, and bottlenecks strictly on the VERIFIED WORKFLOW RISKS section.
-    4. If the answer is not in the context, say "The available project data is insufficient to answer this question."
+    4. Conversation history is contextual only and must not be treated as verified project data. Use the verified project context as the source of truth. If the verified project context does not contain enough information to answer, state that you do not have enough verified project information.
+    5. If the answer is not in the context, say "The available project data is insufficient to answer this question."
     
     PROJECT CONTEXT:
     {context_str}
+    {recent_conv_str}
     
     QUESTION:
     {question}

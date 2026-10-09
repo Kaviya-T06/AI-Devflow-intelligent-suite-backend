@@ -3,7 +3,7 @@ AI Service — sends prompts to the configured AI provider (Google Gemini API).
 
 Configuration is fully driven by environment variables:
     AI_API_KEY    — Google AI Studio API key (required)
-    AI_MODEL      — Gemini model name (default: gemini-2.0-flash)
+    AI_MODEL      — Gemini model name (default: gemini-3.8-flash)
     AI_PROVIDER   — provider identifier for logging (default: google-gemini)
 
 NEVER hardcode API keys or model names here.
@@ -65,7 +65,7 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
         HTTPException(502): Provider returned an error or unexpected response.
     """
     api_key = settings.AI_API_KEY.strip()
-    model = settings.AI_MODEL.strip() or "gemini-3.5-flash"
+    model = settings.AI_MODEL.strip() or "gemini-3.8-flash"
     provider = settings.AI_PROVIDER.strip() or "google-gemini"
 
     # ── Validate configuration ──────────────────────────────────────────────

@@ -15,8 +15,14 @@ class ContinuitySummaryOut(BaseModel):
     recommended_next_steps: str
     raw_context: Optional[Dict[str, Any]] = None
 
+class ChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
 class AIQuestionRequest(BaseModel):
-    question: str
+    question: Optional[str] = None
+    messages: Optional[List[ChatMessage]] = None
 
 class AIAnswerResponse(BaseModel):
     answer: str
+

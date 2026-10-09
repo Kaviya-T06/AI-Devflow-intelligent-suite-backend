@@ -24,8 +24,21 @@ async def generate_continuity_summary(project_id: str, current_user: UserOut = D
 @router.post("/ask", response_model=AIAnswerResponse)
 async def ask_continuity_question(project_id: str, request: AIQuestionRequest, current_user: UserOut = Depends(get_current_user)):
     """
-    Asks the AI a specific question about the project based on verified context.
+    Asks the AI a specific question about the project based on verified context and optional conversation history.
     """
     check_project_access(project_id, current_user)
-    answer = await ask_continuity_question_service(project_id, request.question, current_user)
+    
+    question = (request.question or "").strip()
+    messages = request.messages or []
+    
+    if not question and messages:
+        for msg in reversed(messages):
+            if msg.role == "user" and msg.content.strip():
+                question = msg.content.strip()
+                break
+                
+    if not question:
+        raise HTTPException(status_code=400, detail="A question or at least one user message is required.")
+        
+    answer = await ask_continuity_question_service(project_id, question, current_user, messages=messages)
     return AIAnswerResponse(answer=answer)
