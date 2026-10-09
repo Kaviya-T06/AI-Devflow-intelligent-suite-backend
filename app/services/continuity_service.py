@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime, timezone
+from typing import Optional
 from fastapi import HTTPException
 from app.db.supabase_client import get_supabase_client
 from app.schemas.user import UserOut
@@ -334,28 +335,20 @@ async def generate_continuity_summary_service(project_id: str, current_user: Use
             http_code = e.status_code
         else:
             error_detail = str(e)
-            http_code = None
+            http_code = 502
 
         print(
             f"[AI Handover] FAILED for project_id={project_id} | "
             f"HTTPStatus={http_code} | Detail={error_detail}"
         )
         
-        # Return graceful fallback with real error detail visible on the page
-        fallback = {
-            "project_overview": "⚠️ AI Summary Temporarily Unavailable",
-            "previous_developer_work": "AI analysis could not be completed. Review the 'Project History' tab manually.",
-            "current_work": "Cannot retrieve AI insights at this time. Refer to the raw project tasks below.",
-            "pending_work": "Check the 'Tasks' dashboard directly to see pending work.",
-            "blocked_overdue_work": "Check the 'Workflow Risks' dashboard for any active blockers.",
-            "recent_github_activity": "Refer to the GitHub integration module for raw commits and PRs.",
-            "known_issues": f"Provider Error: {error_detail}",
-            "important_context": "The backend successfully gathered your project context, but the final AI summarization step failed.",
-            "what_next_developer_should_know": "You can still perform all project operations, browse tasks, and view history manually.",
-            "recommended_next_steps": "Check backend logs for the exact error. Verify AI_API_KEY and AI_MODEL in .env, then try again.",
-            "raw_context": raw_dict
-        }
-        return ContinuitySummaryOut(**fallback)
+        raise _HTTPException(
+            status_code=http_code,
+            detail={
+                "message": str(error_detail),
+                "raw_context": raw_dict
+            }
+        )
 
 async def ask_continuity_question_service(
     project_id: str, 
@@ -423,5 +416,7 @@ async def ask_continuity_question_service(
         
         return llm_response.strip()
     except Exception as e:
-        error_msg = getattr(e, 'detail', str(e))
-        return f"⚠️ I'm sorry, but I cannot answer that right now because the AI service is temporarily overloaded or you have exceeded your quota.\n\nProvider detail: {error_msg}"
+        from fastapi import HTTPException as _HTTPException
+        if isinstance(e, _HTTPException):
+            raise e
+        raise _HTTPException(status_code=502, detail=str(e))

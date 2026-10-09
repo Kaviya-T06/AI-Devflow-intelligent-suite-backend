@@ -139,8 +139,9 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
                     await asyncio.sleep(wait_secs)
                     continue
 
+                out_status = 429 if status == 429 else 502
                 raise HTTPException(
-                    status_code=502,
+                    status_code=out_status,
                     detail=(
                         f"AI provider error [{error_label}]: {provider_msg}"
                     )
