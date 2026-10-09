@@ -36,13 +36,25 @@ async def _fetch_github_data(project_id: str):
             issues = [i for i in issues_res if "pull_request" not in i]
         except Exception:
             issues = []
-            
-        return {
+
+        branches = []
+        branches_error = None
+        try:
+            branches_raw = await fetch_github_api(f"https://api.github.com/repos/{full_name}/branches?per_page=30")
+            branches = [{"name": b["name"], "sha": b["commit"]["sha"]} for b in branches_raw if isinstance(b, dict) and "name" in b and isinstance(b.get("commit"), dict)]
+        except Exception as branch_exc:
+            branches_error = str(getattr(branch_exc, "detail", branch_exc))
+
+        result = {
             "repository": full_name,
             "commits": [{"sha": c.get("sha", ""), "message": c["commit"]["message"], "author": c["commit"]["author"]["name"], "date": c["commit"]["author"]["date"]} for c in commits if isinstance(c, dict) and "commit" in c],
             "pull_requests": [{"title": p["title"], "body": p.get("body", ""), "state": p["state"], "author": p["user"]["login"]} for p in prs if isinstance(p, dict) and "title" in p],
-            "issues": [{"title": i["title"], "state": i["state"]} for i in issues if isinstance(i, dict) and "title" in i]
+            "issues": [{"title": i["title"], "state": i["state"]} for i in issues if isinstance(i, dict) and "title" in i],
+            "branches": branches,
         }
+        if branches_error is not None:
+            result["branches_error"] = branches_error
+        return result
     except Exception:
         return None
 
@@ -199,6 +211,14 @@ async def _build_project_context(project_id: str) -> tuple[str, dict]:
         for i in github_data['issues']:
             context.append(f" - [{i['state']}] {i['title']}")
 
+        context.append("\nGITHUB BRANCHES (do NOT infer task ownership, task status, or completion from branch names):")
+        if github_data.get("branches_error"):
+            context.append(f"- Branch data unavailable: {github_data['branches_error']}")
+        elif github_data.get("branches"):
+            for b in github_data["branches"]:
+                context.append(f" - {b['name']} (latest commit: {b['sha'][:7]})")
+        else:
+            context.append("- No branches found.")
     context.append("\nVERIFIED WORKFLOW RISKS:")
     context.append("Open Risks:")
     if open_risks:
@@ -241,7 +261,7 @@ async def _build_project_context(project_id: str) -> tuple[str, dict]:
         "tasks": tasks,
         "activities": activities,
         "risks": risks,
-        "github": github_data or {"repository": None, "commits": [], "pull_requests": [], "issues": []},
+        "github": github_data or {"repository": None, "commits": [], "pull_requests": [], "issues": [], "branches": []},
         "verified_mappings": verified_mappings,
         "unmapped_commits": unmapped_commits,
         "unmapped_prs": unmapped_prs
