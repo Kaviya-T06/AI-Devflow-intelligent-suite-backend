@@ -361,6 +361,8 @@ def update_task_status_service(
         updated_row["projects"] = existing_task.get("projects")
         updated_row["users"] = existing_task.get("users")
 
+        task_proj_id = updated_row.get("project_id") or existing_task.get("project_id")
+
         # Log Activity
         if "status" in update_fields:
             if new_status == "IN_PROGRESS":
@@ -377,6 +379,7 @@ def update_task_status_service(
                 action=action,
                 entity_type="task",
                 entity_id=updated_row["id"],
+                project_id=task_proj_id,
                 description=f"Task '{updated_row['title']}' moved to {updated_row['status']}"
             )
 
@@ -387,6 +390,7 @@ def update_task_status_service(
                 action="TASK_ASSIGNED",
                 entity_type="task",
                 entity_id=updated_row["id"],
+                project_id=task_proj_id,
                 description=f"Task '{updated_row['title']}' reassigned"
             )
         elif len(update_fields) > 0 and current_user.role in (RoleEnum.ADMIN, RoleEnum.PROJECT_MANAGER):
@@ -396,6 +400,7 @@ def update_task_status_service(
                     action="TASK_UPDATED",
                     entity_type="task",
                     entity_id=updated_row["id"],
+                    project_id=task_proj_id,
                     description=f"Task '{updated_row['title']}' updated"
                 )
 
@@ -476,6 +481,7 @@ def create_task_service(
             action="TASK_CREATED",
             entity_type="task",
             entity_id=created_row["id"],
+            project_id=created_row.get("project_id"),
             description=f"Task '{created_row['title']}' created"
         )
 
@@ -520,6 +526,7 @@ def delete_task_service(
             action="TASK_DELETED",
             entity_type="task",
             entity_id=task_id,
+            project_id=deleted_row.get("project_id"),
             description=f"Task '{deleted_row.get('title', 'Unknown')}' deleted"
         )
         

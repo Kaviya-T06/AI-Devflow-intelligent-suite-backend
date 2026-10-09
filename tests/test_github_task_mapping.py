@@ -72,7 +72,7 @@ def run_tests():
 
     try:
         with patch("app.services.continuity_service.fetch_github_api", side_effect=mock_fetch):
-            context = asyncio.run(_build_project_context(proj_id))
+            context, _ = asyncio.run(_build_project_context(proj_id))
             
             # Test 1: Valid Task ID in commit message
             record_test("1. Valid Task ID in commit message -> mapped", 

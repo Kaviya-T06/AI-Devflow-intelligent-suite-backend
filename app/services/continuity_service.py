@@ -57,9 +57,45 @@ async def _build_project_context(project_id: str) -> tuple[str, dict]:
     tasks_resp = _db().table("tasks").select("*, users(name)").eq("project_id", project_id).execute()
     tasks = tasks_resp.data or []
     
-    # 3. Fetch Activity
-    activity_resp = _db().table("activity_logs").select("*, users(name)").eq("entity_id", project_id).order("created_at", desc=True).limit(20).execute()
-    activities = activity_resp.data or []
+    # 3. Fetch Activity (Both Project-Level and Task-Level activity for this project)
+    try:
+        activity_resp = _db().table("activity_logs").select("*, users(name)").eq("project_id", project_id).order("created_at", desc=True).limit(50).execute()
+        activities_by_project = activity_resp.data or []
+    except Exception:
+        activities_by_project = []
+
+    # Also check entity_id == project_id for legacy records where project_id may have been unset
+    try:
+        legacy_resp = _db().table("activity_logs").select("*, users(name)").eq("entity_id", project_id).order("created_at", desc=True).limit(50).execute()
+        legacy_activities = legacy_resp.data or []
+    except Exception:
+        legacy_activities = []
+
+    # Combine and de-duplicate by log ID
+    project_task_ids = {str(t["id"]).lower() for t in tasks if t.get("id")}
+    seen_log_ids = set()
+    activities = []
+    
+    for a in activities_by_project + legacy_activities:
+        log_id = str(a.get("id") or "")
+        if log_id and log_id in seen_log_ids:
+            continue
+        if log_id:
+            seen_log_ids.add(log_id)
+            
+        # Security / Integrity verification: Ensure task activity strictly belongs to this project
+        e_type = str(a.get("entity_type") or "").lower()
+        e_id = str(a.get("entity_id") or "").lower()
+        p_id = str(a.get("project_id") or "").lower()
+        
+        # If project_id matches, it belongs to this project.
+        # If project_id is missing/legacy, verify entity_id is the project itself or in this project's tasks
+        if p_id == str(project_id).lower() or e_id == str(project_id).lower() or (e_type == "task" and e_id in project_task_ids):
+            activities.append(a)
+
+    # Preserve strict chronological ordering (newest first for recent activity display) and bound limit to 30
+    activities.sort(key=lambda x: str(x.get("created_at") or ""), reverse=True)
+    activities = activities[:30]
     
     # 4. Fetch GitHub
     github_data = await _fetch_github_data(project_id)
@@ -203,6 +239,7 @@ async def _build_project_context(project_id: str) -> tuple[str, dict]:
     raw_dict = {
         "project": project,
         "tasks": tasks,
+        "activities": activities,
         "risks": risks,
         "github": github_data or {"repository": None, "commits": [], "pull_requests": [], "issues": []},
         "verified_mappings": verified_mappings,
