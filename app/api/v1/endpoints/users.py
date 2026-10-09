@@ -67,28 +67,69 @@ async def update_my_user(
     payload: UserSelfUpdateRequest,
     current_user: UserOut = Depends(get_current_user),
 ) -> UserOut:
-    """Allow an authenticated user to update their own display name."""
-    if payload.name is None or not payload.name.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Name cannot be blank.",
-        )
+    """Allow an authenticated user to update their own display name and profiling fields."""
+    # Determine the display name to update (support both 'name' and 'full_name' from frontend)
+    new_name = payload.name or payload.full_name
 
-    clean_name = payload.name.strip()
+    if new_name is not None:
+        if not new_name.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Name cannot be blank.",
+            )
+        clean_name = new_name.strip()
+        try:
+            resp = (
+                _db()
+                .table("users")
+                .update({"name": clean_name})
+                .eq("id", current_user.id)
+                .execute()
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+
+        if not resp.data:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+    # Write profiling fields to profiles table (used by matching engine)
+    profile_updates: dict = {}
+    if payload.skills is not None:
+        profile_updates["skills"] = payload.skills
+    if payload.experience_years is not None:
+        profile_updates["experience_years"] = payload.experience_years
+    if payload.capacity_hours_per_week is not None:
+        profile_updates["capacity_hours_per_week"] = payload.capacity_hours_per_week
+    if payload.preferred_role is not None:
+        profile_updates["preferred_role"] = payload.preferred_role
+    if payload.relevant_experience is not None:
+        profile_updates["relevant_experience"] = payload.relevant_experience
+
+    if profile_updates:
+        try:
+            _db().table("profiles").upsert({
+                "id": current_user.id,
+                **profile_updates,
+            }).execute()
+        except Exception as exc:
+            # Non-fatal: log but don't fail the whole request
+            print(f"Warning: failed to update profiles table: {exc}")
+
+    # Return current user (refresh name if changed)
     try:
         resp = (
             _db()
             .table("users")
-            .update({"name": clean_name})
+            .select("id, name, email, role, is_active, created_at")
             .eq("id", current_user.id)
+            .limit(1)
             .execute()
         )
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-    if not resp.data:
-        raise HTTPException(status_code=404, detail="User not found.")
-    return _row_to_user_out(resp.data[0])
+        if resp.data:
+            return _row_to_user_out(resp.data[0])
+    except Exception:
+        pass
+    return current_user
 
 
 # ---------------------------------------------------------------------------

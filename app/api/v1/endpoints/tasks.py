@@ -97,3 +97,14 @@ async def delete_task(
         task_id=task_id,
         current_user=current_user,
     )
+
+@router.get("/{task_id}/recommendations", response_model=List[dict], summary="Get developer recommendations for task")
+async def get_task_recommendations(
+    task_id: str = Path(..., description="Task UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> List[dict]:
+    """
+    Get ranked developer recommendations for this task based on skills, experience, and workload.
+    """
+    from app.services.matching_service import get_explained_recommendations
+    return await get_explained_recommendations(task_id)

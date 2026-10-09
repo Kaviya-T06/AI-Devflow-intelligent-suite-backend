@@ -73,3 +73,9 @@ class UserStatusRequest(BaseModel):
 
 class UserSelfUpdateRequest(BaseModel):
     name: Optional[str] = None
+    full_name: Optional[str] = None  # alias accepted for compatibility
+    skills: Optional[list] = None
+    experience_years: Optional[int] = None
+    capacity_hours_per_week: Optional[int] = None
+    preferred_role: Optional[str] = None
+    relevant_experience: Optional[list] = None

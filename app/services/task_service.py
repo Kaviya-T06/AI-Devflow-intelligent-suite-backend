@@ -78,6 +78,8 @@ def _row_to_task_out(r: dict) -> TaskOut:
         status=task_status,
         priority=r.get("priority", "MEDIUM").upper(),
         due_date=r.get("due_date"),
+        required_skills=r.get("required_skills", []),
+        min_experience_years=r.get("min_experience_years", 0),
         created_at=r.get("created_at"),
         assigned_at=r.get("assigned_at"),
         started_at=r.get("started_at"),
@@ -344,6 +346,10 @@ def update_task_status_service(
             update_fields["assigned_to"] = payload.assigned_to if payload.assigned_to else None
         if payload.due_date is not None:
             update_fields["due_date"] = payload.due_date.isoformat()
+        if payload.required_skills is not None:
+            update_fields["required_skills"] = payload.required_skills
+        if payload.min_experience_years is not None:
+            update_fields["min_experience_years"] = payload.min_experience_years
 
     if not update_fields:
         return _row_to_task_out(existing_task)
@@ -460,6 +466,8 @@ def create_task_service(
             "project_id": payload.project_id if payload.project_id else None,
             "assigned_to": payload.assigned_to if payload.assigned_to else None,
             "due_date": payload.due_date.isoformat() if payload.due_date else None,
+            "required_skills": payload.required_skills,
+            "min_experience_years": payload.min_experience_years,
         }
 
         resp = _db().table("tasks").insert(new_task).execute()

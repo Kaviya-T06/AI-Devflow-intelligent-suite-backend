@@ -29,6 +29,11 @@ class ProfileBase(BaseModel):
     role: UserRole = UserRole.DEVELOPER
     avatar_url: Optional[str] = None
     is_active: bool = True
+    skills: list[dict] = []
+    experience_years: int = 0
+    preferred_role: Optional[str] = None
+    capacity_hours_per_week: int = 40
+    relevant_experience: list[dict] = []
 
 
 class ProfileCreate(ProfileBase):
@@ -41,6 +46,11 @@ class ProfileUpdate(BaseModel):
     """Fields a user is allowed to update themselves."""
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
+    skills: Optional[list[dict]] = None
+    experience_years: Optional[int] = None
+    preferred_role: Optional[str] = None
+    capacity_hours_per_week: Optional[int] = None
+    relevant_experience: Optional[list[dict]] = None
 
     @field_validator("full_name")
     @classmethod

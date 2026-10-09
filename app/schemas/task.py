@@ -38,6 +38,8 @@ class TaskCreateRequest(BaseModel):
     project_id: Optional[str] = None
     assigned_to: Optional[str] = None
     due_date: Optional[date] = None
+    required_skills: list[str] = []
+    min_experience_years: int = 0
 
     model_config = {
         "json_schema_extra": {
@@ -63,6 +65,8 @@ class TaskUpdateRequest(BaseModel):
     project_id: Optional[str] = None
     assigned_to: Optional[str] = None
     due_date: Optional[date] = None
+    required_skills: Optional[list[str]] = None
+    min_experience_years: Optional[int] = None
 
 # ---------------------------------------------------------------------------
 # Response schemas
@@ -77,6 +81,8 @@ class TaskOut(BaseModel):
     status: TaskStatus
     priority: TaskPriority
     due_date: Optional[date] = None
+    required_skills: list[str] = []
+    min_experience_years: int = 0
     created_at: Optional[datetime] = None
     assigned_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
