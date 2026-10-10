@@ -80,6 +80,7 @@ def _row_to_task_out(r: dict) -> TaskOut:
         due_date=r.get("due_date"),
         required_skills=r.get("required_skills", []),
         min_experience_years=r.get("min_experience_years", 0),
+        estimated_effort=r.get("estimated_effort"),
         created_at=r.get("created_at"),
         assigned_at=r.get("assigned_at"),
         started_at=r.get("started_at"),
@@ -350,6 +351,8 @@ def update_task_status_service(
             update_fields["required_skills"] = payload.required_skills
         if payload.min_experience_years is not None:
             update_fields["min_experience_years"] = payload.min_experience_years
+        if payload.estimated_effort is not None:
+            update_fields["estimated_effort"] = payload.estimated_effort
 
     if not update_fields:
         return _row_to_task_out(existing_task)
@@ -468,6 +471,7 @@ def create_task_service(
             "due_date": payload.due_date.isoformat() if payload.due_date else None,
             "required_skills": payload.required_skills,
             "min_experience_years": payload.min_experience_years,
+            "estimated_effort": payload.estimated_effort,
         }
 
         resp = _db().table("tasks").insert(new_task).execute()

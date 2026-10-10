@@ -40,6 +40,7 @@ class TaskCreateRequest(BaseModel):
     due_date: Optional[date] = None
     required_skills: list[str] = []
     min_experience_years: int = 0
+    estimated_effort: Optional[float] = Field(None, ge=0)
 
     model_config = {
         "json_schema_extra": {
@@ -67,6 +68,7 @@ class TaskUpdateRequest(BaseModel):
     due_date: Optional[date] = None
     required_skills: Optional[list[str]] = None
     min_experience_years: Optional[int] = None
+    estimated_effort: Optional[float] = Field(None, ge=0)
 
 # ---------------------------------------------------------------------------
 # Response schemas
@@ -83,6 +85,7 @@ class TaskOut(BaseModel):
     due_date: Optional[date] = None
     required_skills: list[str] = []
     min_experience_years: int = 0
+    estimated_effort: Optional[float] = None
     created_at: Optional[datetime] = None
     assigned_at: Optional[datetime] = None
     started_at: Optional[datetime] = None

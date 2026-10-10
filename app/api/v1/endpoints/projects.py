@@ -148,3 +148,55 @@ async def delete_project(
         current_user=current_user,
     )
 
+
+from app.schemas.simulation import (
+    DeadlineSimulationRequest,
+    DeadlineSimulationResponse,
+    DeveloperUnavailabilitySimulationRequest,
+    UnavailabilitySimulationResponse,
+)
+from app.services.simulation_service import (
+    simulate_deadline_change,
+    simulate_developer_unavailability,
+)
+
+@router.post(
+    "/{project_id}/simulate-deadline",
+    response_model=DeadlineSimulationResponse,
+    summary="Simulate a project deadline change",
+)
+async def simulate_deadline(
+    payload: DeadlineSimulationRequest,
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> DeadlineSimulationResponse:
+    """
+    Run a deterministic What-If simulation to see how changing the deadline impacts capacity.
+    Does NOT update any project data.
+    """
+    return await simulate_deadline_change(
+        project_id=project_id,
+        payload=payload,
+        current_user=current_user,
+    )
+
+@router.post(
+    "/{project_id}/simulate-unavailability",
+    response_model=UnavailabilitySimulationResponse,
+    summary="Simulate a developer's unavailability",
+)
+async def simulate_unavailability(
+    payload: DeveloperUnavailabilitySimulationRequest,
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> UnavailabilitySimulationResponse:
+    """
+    Run a deterministic What-If simulation to see how a developer's absence impacts project capacity.
+    Does NOT update any project data.
+    """
+    return await simulate_developer_unavailability(
+        project_id=project_id,
+        payload=payload,
+        current_user=current_user,
+    )
+
