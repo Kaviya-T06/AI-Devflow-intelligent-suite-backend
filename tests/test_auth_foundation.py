@@ -26,7 +26,7 @@ from fastapi import APIRouter, Depends
 test_router = APIRouter(prefix="/test-rbac", tags=["Test RBAC"])
 
 @test_router.get("/admin-or-manager")
-async def test_admin_or_manager_endpoint(
+async def dummy_admin_or_manager_endpoint(
     current_user: UserOut = Depends(require_admin_or_manager)
 ):
     return {"message": f"Welcome {current_user.name}", "role": current_user.role}

@@ -18,6 +18,13 @@ class UserOut(BaseModel):
     role:       RoleEnum
     is_active:  bool
     created_at: Optional[str] = None
+    
+    # Developer profiling fields
+    skills: Optional[list] = None
+    experience_years: Optional[int] = None
+    capacity_hours_per_week: Optional[int] = None
+    preferred_role: Optional[str] = None
+    relevant_experience: Optional[list] = None
 
     model_config = {"from_attributes": True}
 

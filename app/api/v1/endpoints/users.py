@@ -55,6 +55,17 @@ async def get_my_user(
     current_user: UserOut = Depends(get_current_user),
 ) -> UserOut:
     """Return the profile for the currently authenticated user."""
+    try:
+        prof_resp = _db().table("profiles").select("*").eq("id", current_user.id).limit(1).execute()
+        if prof_resp.data:
+            prof = prof_resp.data[0]
+            current_user.skills = prof.get("skills", [])
+            current_user.experience_years = prof.get("experience_years")
+            current_user.capacity_hours_per_week = prof.get("capacity_hours_per_week")
+            current_user.preferred_role = prof.get("preferred_role")
+            current_user.relevant_experience = prof.get("relevant_experience", [])
+    except Exception as exc:
+        print(f"Warning: failed to fetch profile: {exc}")
     return current_user
 
 
@@ -68,7 +79,6 @@ async def update_my_user(
     current_user: UserOut = Depends(get_current_user),
 ) -> UserOut:
     """Allow an authenticated user to update their own display name and profiling fields."""
-    # Determine the display name to update (support both 'name' and 'full_name' from frontend)
     new_name = payload.name or payload.full_name
 
     if new_name is not None:
@@ -92,10 +102,23 @@ async def update_my_user(
         if not resp.data:
             raise HTTPException(status_code=404, detail="User not found.")
 
-    # Write profiling fields to profiles table (used by matching engine)
     profile_updates: dict = {}
     if payload.skills is not None:
-        profile_updates["skills"] = payload.skills
+        formatted_skills = []
+        for s in payload.skills:
+            if isinstance(s, dict):
+                level = s.get("level", "Beginner")
+                if level == "Expert":
+                    s["proficiency"] = 5
+                elif level == "Intermediate":
+                    s["proficiency"] = 3
+                else:
+                    s["proficiency"] = 1
+                formatted_skills.append(s)
+            elif isinstance(s, str):
+                formatted_skills.append({"name": s.strip(), "proficiency": 3, "level": "Intermediate"})
+        profile_updates["skills"] = formatted_skills
+
     if payload.experience_years is not None:
         profile_updates["experience_years"] = payload.experience_years
     if payload.capacity_hours_per_week is not None:
@@ -107,15 +130,20 @@ async def update_my_user(
 
     if profile_updates:
         try:
-            _db().table("profiles").upsert({
+            # Include required fields for new profiles
+            upsert_payload = {
                 "id": current_user.id,
+                "full_name": current_user.name,
+                "email": current_user.email,
+                "role": current_user.role.value.upper(),
                 **profile_updates,
-            }).execute()
+            }
+            upsert_resp = _db().table("profiles").upsert(upsert_payload).execute()
+            if not upsert_resp.data:
+                raise Exception("No data returned from profile update (check schema/RLS).")
         except Exception as exc:
-            # Non-fatal: log but don't fail the whole request
-            print(f"Warning: failed to update profiles table: {exc}")
+            raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(exc)}")
 
-    # Return current user (refresh name if changed)
     try:
         resp = (
             _db()
@@ -126,7 +154,19 @@ async def update_my_user(
             .execute()
         )
         if resp.data:
-            return _row_to_user_out(resp.data[0])
+            out = _row_to_user_out(resp.data[0])
+            try:
+                prof_resp = _db().table("profiles").select("*").eq("id", current_user.id).limit(1).execute()
+                if prof_resp.data:
+                    prof = prof_resp.data[0]
+                    out.skills = prof.get("skills", [])
+                    out.experience_years = prof.get("experience_years")
+                    out.capacity_hours_per_week = prof.get("capacity_hours_per_week")
+                    out.preferred_role = prof.get("preferred_role")
+                    out.relevant_experience = prof.get("relevant_experience", [])
+            except Exception:
+                pass
+            return out
     except Exception:
         pass
     return current_user
