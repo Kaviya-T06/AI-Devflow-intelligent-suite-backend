@@ -176,14 +176,31 @@ def detect_and_update_risks():
                 
         if to_insert:
             inserted = _db().table("workflow_risks").insert(to_insert).execute()
-            # Log activity for each inserted risk
+            # Log activity and notify for each inserted risk
             from app.services.activity_service import log_activity
+            from app.services.notification_service import NotificationService
+            from app.schemas.notification import NotificationType
+
             for r in inserted.data or []:
                 desc = f"Workflow Risk detected: {r.get('title')}"
                 if r.get("risk_type") == "PROJECT_DELAY":
                     log_activity(user_id=r.get("user_id"), action="RISK_DETECTED", entity_type="project", entity_id=r.get("project_id"), description=desc)
                 else:
                     log_activity(user_id=r.get("user_id"), action="RISK_DETECTED", entity_type="task", entity_id=r.get("task_id"), description=desc)
+
+                target_user = r.get("user_id")
+                if target_user:
+                    try:
+                        NotificationService.create_notification(
+                            recipient_id=str(target_user),
+                            type=NotificationType.RISK_ALERT,
+                            title=f"Workflow Risk: {r.get('title')}",
+                            message=r.get("description", "A workflow risk was detected."),
+                            project_id=str(r.get("project_id")) if r.get("project_id") else None,
+                            task_id=str(r.get("task_id")) if r.get("task_id") else None,
+                        )
+                    except Exception as exc:
+                        print(f"Warning: Failed to create risk notification: {exc}")
             
         # Resolve risks that are no longer active
         to_resolve = []

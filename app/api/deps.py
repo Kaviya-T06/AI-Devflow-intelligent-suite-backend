@@ -2,6 +2,7 @@
 Common API dependencies — authentication, database access, and RBAC guards.
 All authentication is verified against the `public.users` table using FastAPI JWT.
 """
+import logging
 from typing import Callable, List, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -12,6 +13,7 @@ from app.db.supabase_client import get_supabase_client
 from app.schemas.auth import RoleEnum
 from app.schemas.user import UserOut
 
+logger = logging.getLogger("app.api.deps")
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -31,6 +33,7 @@ async def get_current_user(
         HTTP 403 if user account is deactivated.
     """
     if not creds or not creds.credentials:
+        logger.warning("Auth failure: Missing Authorization header or empty credentials.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated.",
@@ -39,7 +42,8 @@ async def get_current_user(
 
     try:
         payload = decode_access_token(creds.credentials)
-    except JWTError:
+    except JWTError as err:
+        logger.warning(f"Auth failure: Malformed, expired, or invalid JWT signature. Error: {err}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token.",
@@ -48,6 +52,7 @@ async def get_current_user(
 
     user_id = payload.get("sub")
     if not user_id:
+        logger.warning("Auth failure: Decoded JWT token missing 'sub' user identity.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token missing user identity.",
@@ -65,12 +70,14 @@ async def get_current_user(
             .execute()
         )
     except Exception as exc:
+        logger.error(f"Auth database lookup failed for user ID '{user_id}': {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database lookup failed: {exc}",
         )
 
     if not resp.data:
+        logger.warning(f"Auth failure: Authenticated user ID '{user_id}' not found in public.users database.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or credentials invalid.",
@@ -79,6 +86,7 @@ async def get_current_user(
 
     user_row = resp.data[0]
     if not user_row.get("is_active", True):
+        logger.warning(f"Auth failure: Account '{user_id}' is deactivated.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account deactivated. Contact your administrator.",

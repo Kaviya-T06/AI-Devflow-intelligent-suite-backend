@@ -419,6 +419,48 @@ def update_task_status_service(
                 _recalculate_project_progress(existing_task["project_id"])
                 _recalculate_project_status(existing_task["project_id"])
 
+        # Send notifications for status changes and reassignments
+        try:
+            from app.services.notification_service import NotificationService
+            from app.schemas.notification import NotificationType
+
+            if "assigned_to" in update_fields and update_fields["assigned_to"] and update_fields["assigned_to"] != old_assigned_to:
+                NotificationService.create_notification(
+                    recipient_id=str(update_fields["assigned_to"]),
+                    type=NotificationType.TASK_ASSIGNED,
+                    title="Task Assigned",
+                    message=f"You have been assigned to task '{updated_row.get('title')}'",
+                    project_id=str(task_proj_id) if task_proj_id else None,
+                    task_id=str(updated_row["id"]),
+                )
+
+            if "status" in update_fields:
+                assigned_dev = updated_row.get("assigned_to") or old_assigned_to
+                if assigned_dev and str(assigned_dev) != str(current_user.id):
+                    NotificationService.create_notification(
+                        recipient_id=str(assigned_dev),
+                        type=NotificationType.TASK_STATUS_CHANGED,
+                        title="Task Status Updated",
+                        message=f"Task '{updated_row.get('title')}' status changed to {new_status}",
+                        project_id=str(task_proj_id) if task_proj_id else None,
+                        task_id=str(updated_row["id"]),
+                    )
+                if task_proj_id:
+                    proj_resp = _db().table("projects").select("project_manager_id").eq("id", task_proj_id).execute()
+                    if proj_resp.data and proj_resp.data[0].get("project_manager_id"):
+                        pm_id = str(proj_resp.data[0]["project_manager_id"])
+                        if pm_id != str(current_user.id):
+                            NotificationService.create_notification(
+                                recipient_id=pm_id,
+                                type=NotificationType.TASK_STATUS_CHANGED,
+                                title="Project Task Status Updated",
+                                message=f"Task '{updated_row.get('title')}' updated to {new_status}",
+                                project_id=str(task_proj_id),
+                                task_id=str(updated_row["id"]),
+                            )
+        except Exception as exc:
+            print(f"Warning: Failed to dispatch task update notification: {exc}")
+
         # Refetch with joins to ensure accurate joined data if project/user changed
         return get_task_by_id_service(updated_row["id"], current_user)
     except HTTPException:
@@ -496,6 +538,22 @@ def create_task_service(
             project_id=created_row.get("project_id"),
             description=f"Task '{created_row['title']}' created"
         )
+
+        # Notify assigned user if assigned at creation
+        if created_row.get("assigned_to"):
+            try:
+                from app.services.notification_service import NotificationService
+                from app.schemas.notification import NotificationType
+                NotificationService.create_notification(
+                    recipient_id=str(created_row["assigned_to"]),
+                    type=NotificationType.TASK_ASSIGNED,
+                    title="New Task Assigned",
+                    message=f"You have been assigned to task '{created_row.get('title')}'",
+                    project_id=str(created_row.get("project_id")) if created_row.get("project_id") else None,
+                    task_id=str(created_row["id"]),
+                )
+            except Exception as exc:
+                print(f"Warning: Failed to dispatch task assignment notification: {exc}")
 
         # Fetch the complete row with joins
         return get_task_by_id_service(created_row["id"], current_user)
