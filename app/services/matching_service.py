@@ -13,9 +13,16 @@ WEIGHT_HISTORY = 0.10
 
 def calculate_match_score(developer: dict, task: dict) -> dict:
     """Deterministic ranking function."""
-    required_skills = [s.lower() for s in task.get("required_skills") or []]
+    raw_required_skills = task.get("required_skills") or []
+    required_skills = []
+    for s in raw_required_skills:
+        if isinstance(s, dict):
+            required_skills.append(s.get("name", "").lower().strip())
+        elif isinstance(s, str):
+            required_skills.append(s.lower().strip())
+
     dev_skills = {
-        s.get("name", "").lower(): s.get("proficiency", 1)
+        s.get("name", "").lower().strip(): s.get("proficiency", 1)
         for s in (developer.get("skills") or [])
     }
     
@@ -75,6 +82,7 @@ def calculate_match_score(developer: dict, task: dict) -> dict:
         "skill_match": skill_score,
         "missing_skills": [s for s in required_skills if s not in dev_skills],
         "workload_score": workload_score,
+        "task_required_skills": required_skills,
     }
 
 
@@ -111,6 +119,7 @@ def get_recommended_team_for_task(task_id: str) -> List[dict]:
             "developer": dev,
             "match_score": match_info["score"],
             "missing_skills": match_info["missing_skills"],
+            "task_required_skills": match_info["task_required_skills"],
             "basic_explanation": f"Match Score: {match_info['score']}%. Skill match: {match_info['skill_match']:.2f}. Workload score: {match_info['workload_score']:.2f}."
         })
         
