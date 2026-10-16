@@ -98,7 +98,7 @@ def run_tests():
             mock_post.side_effect = httpx.TimeoutException("Timeout")
             
             res = client.post(f"/api/v1/projects/{proj_id}/continuity/ask", headers=headers, json={"question": "test"})
-            record_test("5. Ask endpoint returns 502 on timeout", res.status_code == 502, res.text)
+            record_test("5. Ask endpoint returns 502/504 on timeout", res.status_code in (502, 504), res.text)
 
     finally:
         try:

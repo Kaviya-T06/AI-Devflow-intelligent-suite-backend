@@ -30,11 +30,14 @@ class Settings(BaseSettings):
     APP_SECRET_KEY: str = "change-me"
     
     # ------------------------------------------------------------------
-    # AI / GitHub Integration
+    # AI / Ollama Integration
     # ------------------------------------------------------------------
     AI_API_KEY: str = ""
     AI_MODEL: str = "gemini-3.8-flash"
     AI_PROVIDER: str = "google-gemini"
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2:1b"
+    OLLAMA_TIMEOUT: float = 120.0
     GITHUB_TOKEN: str = ""
 
     # ------------------------------------------------------------------

@@ -18,6 +18,8 @@ from app.schemas.project import (
 )
 from app.schemas.user import UserOut
 from app.services.activity_service import log_activity
+from app.schemas.notification import NotificationType
+from app.services.notification_service import NotificationService
 
 
 def _db():
@@ -205,6 +207,14 @@ def get_project_by_id_service(
     - Developer: View project.
     """
     try:
+        uuid.UUID(str(project_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found.",
+        )
+
+    try:
         resp = _db().table("projects").select("*").eq("id", project_id).limit(1).execute()
         if not resp.data:
             raise HTTPException(
@@ -296,14 +306,40 @@ def create_project_service(
         created_row = resp.data[0]
         managers_map = _populate_managers([created_row])
         
-        # Log Activity
+        # Log Activity for project creation
         log_activity(
             user_id=current_user.id,
             action="PROJECT_CREATED",
             entity_type="project",
             entity_id=created_row["id"],
+            project_id=created_row["id"],
             description=f"Project '{created_row['name']}' was created"
         )
+
+        # Notify assigned Project Manager if assigned
+        if created_row.get("project_manager_id"):
+            try:
+                NotificationService.create_notification(
+                    recipient_id=str(created_row["project_manager_id"]),
+                    type=NotificationType.PROJECT_ASSIGNED,
+                    title="New Project Assigned",
+                    message=f'You have been assigned to the project "{created_row["name"]}".',
+                    project_id=str(created_row["id"]),
+                )
+            except Exception as notif_exc:
+                print(f"Warning: Failed to create project assignment notification: {notif_exc}")
+
+            pm_name = "Assigned PM"
+            if managers_map.get(str(created_row["project_manager_id"])):
+                pm_name = managers_map[str(created_row["project_manager_id"])].get("name", "Assigned PM")
+            log_activity(
+                user_id=current_user.id,
+                action="PROJECT_ASSIGNED",
+                entity_type="project",
+                entity_id=created_row["id"],
+                project_id=created_row["id"],
+                description=f"Project '{created_row['name']}' was assigned to {pm_name}"
+            )
         
         return _row_to_project_out(created_row, managers_map)
     except HTTPException:
@@ -374,7 +410,8 @@ def update_project_service(
     if "status" in update_data and update_data["status"] is not None:
         update_fields["status"] = update_data["status"].value
 
-    # Progress is calculated dynamically, so we ignore payload.progress
+    if "progress" in update_data and update_data["progress"] is not None:
+        update_fields["progress"] = update_data["progress"]
 
     if "project_manager_id" in update_data:
         pm_id = update_data["project_manager_id"]
@@ -455,8 +492,22 @@ def update_project_service(
                 action="PROJECT_MANAGER_CHANGED",
                 entity_type="project",
                 entity_id=updated_row["id"],
+                project_id=updated_row["id"],
                 description=f"Project '{updated_row['name']}' assigned to {new_manager_name}"
             )
+            new_pm_id = updated_row.get("project_manager_id")
+            old_pm_id = existing_project.get("project_manager_id")
+            if new_pm_id and str(new_pm_id) != str(old_pm_id):
+                try:
+                    NotificationService.create_notification(
+                        recipient_id=str(new_pm_id),
+                        type=NotificationType.PROJECT_ASSIGNED,
+                        title="New Project Assigned",
+                        message=f'You have been assigned to the project "{updated_row["name"]}".',
+                        project_id=str(updated_row["id"]),
+                    )
+                except Exception as notif_exc:
+                    print(f"Warning: Failed to create project reassignment notification: {notif_exc}")
             
         if "start_date" in update_fields or "end_date" in update_fields:
             log_activity(
@@ -567,7 +618,7 @@ def get_project_history_service(
         resp = _db().table("activity_logs").select(
             "id, user_id, action, entity_type, entity_id, project_id, description, metadata, created_at, "
             "users(id, name, email)"
-        ).eq("project_id", project_id).order("created_at", desc=True).execute()
+        ).or_(f"project_id.eq.{project_id},and(entity_type.eq.project,entity_id.eq.{project_id})").order("created_at", desc=True).execute()
         
         results = []
         for row in resp.data:

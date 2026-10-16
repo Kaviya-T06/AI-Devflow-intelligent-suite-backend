@@ -177,7 +177,7 @@ def run_tests():
             record_test(
                 "8. Verified project context and risks remain present with conversation memory",
                 "Implement authentication system" in prompt_sent and "REVIEW_DELAY" in prompt_sent and "John Doe" in prompt_sent,
-                "Project context missing from prompt"
+                f"Missing: task={'Implement authentication system' in prompt_sent}, risk={'REVIEW_DELAY' in prompt_sent}, user={'John Doe' in prompt_sent}"
             )
             record_test(
                 "9. VERIFIED WORKFLOW RISKS section appears exactly once",

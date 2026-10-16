@@ -429,7 +429,7 @@ def run_all_tests():
         # ------------------------------------------------------------------
         # Test 15: Risk history preserved (resolved risks still in DB)
         # ------------------------------------------------------------------
-        all_stuck = db.table("workflow_risks").select("id, is_resolved").eq("task_id", stuck_task_id).eq("risk_type", "STUCK_TASK").execute()
+        all_stuck = db.table("workflow_risks").select("id, is_resolved, detected_at, resolved_at").eq("task_id", stuck_task_id).eq("risk_type", "STUCK_TASK").execute()
         record_test(
             "18. Resolved risk history is preserved (not deleted)",
             len(all_stuck.data or []) > 0,

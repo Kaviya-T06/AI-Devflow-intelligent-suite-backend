@@ -2,7 +2,9 @@
 AI DevFlow Intelligence Suite — Backend Application
 Main FastAPI application entry point.
 """
-from fastapi import FastAPI
+import httpx
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
@@ -47,6 +49,16 @@ def create_application() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "Accept"],
     )
+
+    # ------------------------------------------------------------------
+    # Global exception handlers for external connection drops
+    # ------------------------------------------------------------------
+    @app.exception_handler(httpx.ConnectError)
+    async def connect_error_handler(request: Request, exc: httpx.ConnectError):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Unable to connect to database or remote service (DNS/network connection error). Please verify your internet connection."}
+        )
 
     # ------------------------------------------------------------------
     # Route registration

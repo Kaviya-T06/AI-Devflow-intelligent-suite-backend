@@ -64,11 +64,22 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
         HTTPException(500): AI_API_KEY is not configured.
         HTTPException(502): Provider returned an error or unexpected response.
     """
+    provider = (settings.AI_PROVIDER or "").strip().lower()
+
+    # ── Ollama Provider ──────────────────────────────────────────────────────
+    if provider == "ollama":
+        from app.services.ollama_service import ask_ollama
+        logger.info(
+            "[AI Service] Routing prompt to Ollama | Model: %s | BaseUrl: %s",
+            settings.OLLAMA_MODEL,
+            settings.OLLAMA_BASE_URL,
+        )
+        return await ask_ollama(prompt, json_response=json_response)
+
     api_key = settings.AI_API_KEY.strip()
     model = settings.AI_MODEL.strip() or "gemini-3.8-flash"
-    provider = settings.AI_PROVIDER.strip() or "google-gemini"
 
-    # ── Validate configuration ──────────────────────────────────────────────
+    # ── Validate Gemini configuration ─────────────────────────────────────────
     if not api_key:
         logger.error(
             "[AI Service] MISSING API KEY — AI_API_KEY is not set in .env. "

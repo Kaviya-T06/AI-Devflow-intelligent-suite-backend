@@ -41,6 +41,19 @@ class TaskCreateRequest(BaseModel):
     required_skills: list[str] = []
     min_experience_years: int = 0
     estimated_effort: Optional[float] = Field(None, ge=0)
+    estimated_hours: Optional[float] = Field(None, ge=0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def sync_estimates(cls, data):
+        if isinstance(data, dict):
+            effort = data.get("estimated_hours")
+            if effort is None:
+                effort = data.get("estimated_effort")
+            if effort is not None:
+                data["estimated_hours"] = float(effort)
+                data["estimated_effort"] = float(effort)
+        return data
 
     model_config = {
         "json_schema_extra": {
@@ -53,6 +66,7 @@ class TaskCreateRequest(BaseModel):
                     "project_id": "project-uuid-here",
                     "assigned_to": "user-uuid-here",
                     "due_date": "2026-10-15",
+                    "estimated_hours": 16.0,
                 }
             ]
         }
@@ -69,6 +83,19 @@ class TaskUpdateRequest(BaseModel):
     required_skills: Optional[list[str]] = None
     min_experience_years: Optional[int] = None
     estimated_effort: Optional[float] = Field(None, ge=0)
+    estimated_hours: Optional[float] = Field(None, ge=0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def sync_estimates(cls, data):
+        if isinstance(data, dict):
+            effort = data.get("estimated_hours")
+            if effort is None:
+                effort = data.get("estimated_effort")
+            if effort is not None:
+                data["estimated_hours"] = float(effort)
+                data["estimated_effort"] = float(effort)
+        return data
 
 # ---------------------------------------------------------------------------
 # Response schemas
@@ -86,6 +113,7 @@ class TaskOut(BaseModel):
     required_skills: list[str] = []
     min_experience_years: int = 0
     estimated_effort: Optional[float] = None
+    estimated_hours: Optional[float] = None
     created_at: Optional[datetime] = None
     assigned_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
@@ -101,6 +129,18 @@ class TaskOut(BaseModel):
     project: Optional[dict] = None
     assignee: Optional[dict] = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def sync_estimates(cls, data):
+        if isinstance(data, dict):
+            effort = data.get("estimated_hours")
+            if effort is None:
+                effort = data.get("estimated_effort")
+            data["estimated_hours"] = float(effort) if effort is not None else None
+            data["estimated_effort"] = float(effort) if effort is not None else None
+        return data
+
     model_config = {
         "from_attributes": True,
     }
+

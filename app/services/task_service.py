@@ -18,10 +18,42 @@ from app.schemas.task import (
 )
 from app.schemas.user import UserOut
 from app.services.activity_service import log_activity
+from app.schemas.notification import NotificationType
+from app.services.notification_service import NotificationService
 
 
 def _db():
     return get_supabase_client()
+
+
+def validate_assigned_developer(dev_id: str) -> dict:
+    """
+    Validate that an assigned user exists, is active, and is an eligible developer.
+    """
+    try:
+        resp = _db().table("users").select("id, name, email, role, is_active").eq("id", dev_id).limit(1).execute()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error looking up developer: {str(exc)}",
+        )
+    if not resp.data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Assigned developer user '{dev_id}' not found.",
+        )
+    dev_user = resp.data[0]
+    if not dev_user.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Assigned developer account is inactive.",
+        )
+    if dev_user.get("role") not in (RoleEnum.DEVELOPER.value, RoleEnum.PROJECT_MANAGER.value, RoleEnum.ADMIN.value):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Assigned user must be an eligible active developer.",
+        )
+    return dev_user
 
 
 def _recalculate_project_progress(project_id: str):
@@ -80,7 +112,8 @@ def _row_to_task_out(r: dict) -> TaskOut:
         due_date=r.get("due_date"),
         required_skills=r.get("required_skills", []),
         min_experience_years=r.get("min_experience_years", 0),
-        estimated_effort=r.get("estimated_effort"),
+        estimated_effort=r.get("estimated_hours") if r.get("estimated_hours") is not None else r.get("estimated_effort"),
+        estimated_hours=r.get("estimated_hours") if r.get("estimated_hours") is not None else r.get("estimated_effort"),
         created_at=r.get("created_at"),
         assigned_at=r.get("assigned_at"),
         started_at=r.get("started_at"),
@@ -302,19 +335,37 @@ def update_task_status_service(
                         detail="You do not have permission to modify tasks outside your managed projects.",
                     )
 
+    if payload.assigned_to and payload.assigned_to != existing_task.get("assigned_to"):
+        validate_assigned_developer(payload.assigned_to)
+
     update_fields = {}
     current_time = datetime.now(timezone.utc).isoformat()
     old_status = (existing_task.get("status") or "TODO").upper()
     new_status = payload.status.value if payload.status else old_status
 
     if payload.status and new_status != old_status:
-        # Validate transitions
-        valid_transitions = {
-            "TODO": ["IN_PROGRESS"],
-            "IN_PROGRESS": ["REVIEW", "COMPLETED"],  # Sometimes people skip review
-            "REVIEW": ["COMPLETED", "IN_PROGRESS"],  # Can go back to in progress if rejected
-            "COMPLETED": []
-        }
+        # Developers cannot approve tasks to COMPLETED
+        if new_status == "COMPLETED" and current_user.role == RoleEnum.DEVELOPER:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only Project Managers or Administrators can approve and complete tasks.",
+            )
+
+        # Validate transitions based on role
+        if current_user.role == RoleEnum.DEVELOPER:
+            valid_transitions = {
+                "TODO": ["IN_PROGRESS"],
+                "IN_PROGRESS": ["REVIEW"],
+                "REVIEW": [],
+                "COMPLETED": []
+            }
+        else:
+            valid_transitions = {
+                "TODO": ["IN_PROGRESS"],
+                "IN_PROGRESS": ["REVIEW", "COMPLETED"],
+                "REVIEW": ["COMPLETED", "IN_PROGRESS"],
+                "COMPLETED": []
+            }
 
         if new_status not in valid_transitions.get(old_status, []):
              raise HTTPException(
@@ -351,14 +402,32 @@ def update_task_status_service(
             update_fields["required_skills"] = payload.required_skills
         if payload.min_experience_years is not None:
             update_fields["min_experience_years"] = payload.min_experience_years
-        if payload.estimated_effort is not None:
-            update_fields["estimated_effort"] = payload.estimated_effort
+        
+        effort_val = payload.estimated_hours if payload.estimated_hours is not None else payload.estimated_effort
+        if effort_val is not None:
+            update_fields["estimated_effort"] = effort_val
+            update_fields["estimated_hours"] = effort_val
 
     if not update_fields:
         return _row_to_task_out(existing_task)
 
     try:
-        resp = _db().table("tasks").update(update_fields).eq("id", task_id).execute()
+        try:
+            resp = _db().table("tasks").update(update_fields).eq("id", task_id).execute()
+        except Exception as update_err:
+            # If estimated_hours column doesn't exist yet in Supabase, fall back to estimated_effort only
+            err_str = str(update_err).lower()
+            if "estimated_hours" in err_str and "estimated_hours" in update_fields:
+                fallback_fields = dict(update_fields)
+                fallback_fields.pop("estimated_hours", None)
+                resp = _db().table("tasks").update(fallback_fields).eq("id", task_id).execute()
+            elif "estimated_effort" in err_str and "estimated_effort" in update_fields:
+                fallback_fields = dict(update_fields)
+                fallback_fields.pop("estimated_effort", None)
+                resp = _db().table("tasks").update(fallback_fields).eq("id", task_id).execute()
+            else:
+                raise update_err
+
         if not resp.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -371,17 +440,34 @@ def update_task_status_service(
         updated_row["users"] = existing_task.get("users")
 
         task_proj_id = updated_row.get("project_id") or existing_task.get("project_id")
+        project_name = ""
+        project_pm_id = None
+        if task_proj_id:
+            try:
+                proj_resp = _db().table("projects").select("name, project_manager_id").eq("id", task_proj_id).limit(1).execute()
+                if proj_resp.data:
+                    project_name = proj_resp.data[0].get("name", "")
+                    project_pm_id = str(proj_resp.data[0]["project_manager_id"]) if proj_resp.data[0].get("project_manager_id") else None
+            except Exception:
+                pass
 
         # Log Activity
         if "status" in update_fields:
-            if new_status == "IN_PROGRESS":
+            if new_status == "IN_PROGRESS" and old_status == "REVIEW":
+                action = "TASK_REJECTED"
+                desc = f"Task '{updated_row['title']}' was returned for revisions"
+            elif new_status == "IN_PROGRESS":
                 action = "TASK_STARTED"
+                desc = f"Task '{updated_row['title']}' was started"
             elif new_status == "REVIEW":
                 action = "TASK_SUBMITTED_FOR_REVIEW"
+                desc = f"Task '{updated_row['title']}' was submitted for review"
             elif new_status == "COMPLETED":
                 action = "TASK_COMPLETED"
+                desc = f"Task '{updated_row['title']}' was approved and completed"
             else:
                 action = "TASK_STATUS_CHANGED"
+                desc = f"Task '{updated_row['title']}' moved to {updated_row['status']}"
 
             log_activity(
                 user_id=current_user.id,
@@ -389,7 +475,7 @@ def update_task_status_service(
                 entity_type="task",
                 entity_id=updated_row["id"],
                 project_id=task_proj_id,
-                description=f"Task '{updated_row['title']}' moved to {updated_row['status']}"
+                description=desc
             )
 
         # Log reassignment if assigned_to changed
@@ -421,43 +507,90 @@ def update_task_status_service(
 
         # Send notifications for status changes and reassignments
         try:
-            from app.services.notification_service import NotificationService
-            from app.schemas.notification import NotificationType
-
+            # 1. Reassignment notification to NEW assignee only
             if "assigned_to" in update_fields and update_fields["assigned_to"] and update_fields["assigned_to"] != old_assigned_to:
+                msg = (
+                    f'You have been assigned the task "{updated_row.get("title")}" in project "{project_name}".'
+                    if project_name
+                    else f'You have been assigned to task "{updated_row.get("title")}".'
+                )
                 NotificationService.create_notification(
                     recipient_id=str(update_fields["assigned_to"]),
                     type=NotificationType.TASK_ASSIGNED,
-                    title="Task Assigned",
-                    message=f"You have been assigned to task '{updated_row.get('title')}'",
+                    title="New Task Assigned",
+                    message=msg,
                     project_id=str(task_proj_id) if task_proj_id else None,
                     task_id=str(updated_row["id"]),
                 )
 
+            # 2. Status change notifications
             if "status" in update_fields:
                 assigned_dev = updated_row.get("assigned_to") or old_assigned_to
-                if assigned_dev and str(assigned_dev) != str(current_user.id):
-                    NotificationService.create_notification(
-                        recipient_id=str(assigned_dev),
-                        type=NotificationType.TASK_STATUS_CHANGED,
-                        title="Task Status Updated",
-                        message=f"Task '{updated_row.get('title')}' status changed to {new_status}",
-                        project_id=str(task_proj_id) if task_proj_id else None,
-                        task_id=str(updated_row["id"]),
-                    )
-                if task_proj_id:
-                    proj_resp = _db().table("projects").select("project_manager_id").eq("id", task_proj_id).execute()
-                    if proj_resp.data and proj_resp.data[0].get("project_manager_id"):
-                        pm_id = str(proj_resp.data[0]["project_manager_id"])
-                        if pm_id != str(current_user.id):
-                            NotificationService.create_notification(
-                                recipient_id=pm_id,
-                                type=NotificationType.TASK_STATUS_CHANGED,
-                                title="Project Task Status Updated",
-                                message=f"Task '{updated_row.get('title')}' updated to {new_status}",
-                                project_id=str(task_proj_id),
-                                task_id=str(updated_row["id"]),
-                            )
+
+                if new_status == "REVIEW":
+                    # Notify Project Manager
+                    if project_pm_id and str(project_pm_id) != str(current_user.id):
+                        msg = (
+                            f'Task "{updated_row.get("title")}" in project "{project_name}" has been submitted for review.'
+                            if project_name
+                            else f'Task "{updated_row.get("title")}" has been submitted for review.'
+                        )
+                        NotificationService.create_notification(
+                            recipient_id=str(project_pm_id),
+                            type=NotificationType.TASK_REVIEW_REQUESTED,
+                            title="Task Ready for Review",
+                            message=msg,
+                            project_id=str(task_proj_id) if task_proj_id else None,
+                            task_id=str(updated_row["id"]),
+                        )
+                elif new_status == "COMPLETED":
+                    # Notify assigned developer
+                    if assigned_dev and str(assigned_dev) != str(current_user.id):
+                        msg = (
+                            f'Task "{updated_row.get("title")}" in project "{project_name}" has been approved and completed.'
+                            if project_name
+                            else f'Task "{updated_row.get("title")}" has been approved and completed.'
+                        )
+                        NotificationService.create_notification(
+                            recipient_id=str(assigned_dev),
+                            type=NotificationType.TASK_COMPLETED,
+                            title="Task Completed",
+                            message=msg,
+                            project_id=str(task_proj_id) if task_proj_id else None,
+                            task_id=str(updated_row["id"]),
+                        )
+                elif old_status == "REVIEW" and new_status == "IN_PROGRESS":
+                    # Notify assigned developer of revisions requested
+                    if assigned_dev and str(assigned_dev) != str(current_user.id):
+                        msg = (
+                            f'Task "{updated_row.get("title")}" in project "{project_name}" was returned for revisions.'
+                            if project_name
+                            else f'Task "{updated_row.get("title")}" was returned for revisions.'
+                        )
+                        NotificationService.create_notification(
+                            recipient_id=str(assigned_dev),
+                            type=NotificationType.TASK_STATUS_CHANGED,
+                            title="Task Review: Revisions Requested",
+                            message=msg,
+                            project_id=str(task_proj_id) if task_proj_id else None,
+                            task_id=str(updated_row["id"]),
+                        )
+                elif old_status == "TODO" and new_status == "IN_PROGRESS":
+                    # Notify Project Manager that task was started
+                    if project_pm_id and str(project_pm_id) != str(current_user.id):
+                        msg = (
+                            f'Task "{updated_row.get("title")}" in project "{project_name}" has been started.'
+                            if project_name
+                            else f'Task "{updated_row.get("title")}" has been started.'
+                        )
+                        NotificationService.create_notification(
+                            recipient_id=str(project_pm_id),
+                            type=NotificationType.TASK_STATUS_CHANGED,
+                            title="Task Started",
+                            message=msg,
+                            project_id=str(task_proj_id) if task_proj_id else None,
+                            task_id=str(updated_row["id"]),
+                        )
         except Exception as exc:
             print(f"Warning: Failed to dispatch task update notification: {exc}")
 
@@ -487,21 +620,32 @@ def create_task_service(
             detail="Only Admins and Managers can create tasks.",
         )
 
-    # PM can only create tasks in their managed projects
-    if current_user.role.value == RoleEnum.PROJECT_MANAGER.value and payload.project_id:
-        proj_resp = _db().table("projects").select("project_manager_id").eq("id", payload.project_id).limit(1).execute()
+    # Verify project exists and check PM authorization
+    project_name = ""
+    if payload.project_id:
+        proj_resp = _db().table("projects").select("id, name, project_manager_id").eq("id", payload.project_id).limit(1).execute()
         if not proj_resp.data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Project not found.",
             )
-        proj_pm = proj_resp.data[0].get("project_manager_id")
-        if str(proj_pm) != str(current_user.id):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only create tasks in projects you manage.",
-            )
+        project_row = proj_resp.data[0]
+        project_name = project_row.get("name", "")
+        if current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
+            proj_pm = project_row.get("project_manager_id")
+            if str(proj_pm) != str(current_user.id):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only create tasks in projects you manage.",
+                )
 
+    # Validate assigned developer
+    assigned_dev_name = ""
+    if payload.assigned_to:
+        dev_info = validate_assigned_developer(payload.assigned_to)
+        assigned_dev_name = dev_info.get("name", "")
+
+    effort_val = payload.estimated_hours if payload.estimated_hours is not None else payload.estimated_effort
     try:
         new_task = {
             "title": payload.title,
@@ -513,10 +657,23 @@ def create_task_service(
             "due_date": payload.due_date.isoformat() if payload.due_date else None,
             "required_skills": payload.required_skills,
             "min_experience_years": payload.min_experience_years,
-            "estimated_effort": payload.estimated_effort,
+            "estimated_effort": effort_val,
+            "estimated_hours": effort_val,
         }
 
-        resp = _db().table("tasks").insert(new_task).execute()
+        try:
+            resp = _db().table("tasks").insert(new_task).execute()
+        except Exception as insert_err:
+            err_str = str(insert_err).lower()
+            if "estimated_hours" in err_str:
+                new_task.pop("estimated_hours", None)
+                resp = _db().table("tasks").insert(new_task).execute()
+            elif "estimated_effort" in err_str:
+                new_task.pop("estimated_effort", None)
+                resp = _db().table("tasks").insert(new_task).execute()
+            else:
+                raise insert_err
+
         if not resp.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -539,16 +696,28 @@ def create_task_service(
             description=f"Task '{created_row['title']}' created"
         )
 
-        # Notify assigned user if assigned at creation
         if created_row.get("assigned_to"):
+            log_activity(
+                user_id=current_user.id,
+                action="TASK_ASSIGNED",
+                entity_type="task",
+                entity_id=created_row["id"],
+                project_id=created_row.get("project_id"),
+                description=f"Task '{created_row['title']}' assigned to {assigned_dev_name or 'developer'}"
+            )
+
+            # Notify assigned user if assigned at creation
             try:
-                from app.services.notification_service import NotificationService
-                from app.schemas.notification import NotificationType
+                msg = (
+                    f'You have been assigned the task "{created_row.get("title")}" in project "{project_name}".'
+                    if project_name
+                    else f'You have been assigned the task "{created_row.get("title")}".'
+                )
                 NotificationService.create_notification(
                     recipient_id=str(created_row["assigned_to"]),
                     type=NotificationType.TASK_ASSIGNED,
                     title="New Task Assigned",
-                    message=f"You have been assigned to task '{created_row.get('title')}'",
+                    message=msg,
                     project_id=str(created_row.get("project_id")) if created_row.get("project_id") else None,
                     task_id=str(created_row["id"]),
                 )

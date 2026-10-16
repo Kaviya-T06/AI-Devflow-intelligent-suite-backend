@@ -251,11 +251,12 @@ def run_tests():
         # TEST 6: Bounded history limit (max 30 items)
         # -------------------------------------------------------------
         bulk_ids = []
+        bulk_rows = []
         for i in range(40):
             b_id = str(uuid.uuid4())
             bulk_ids.append(b_id)
             activity_ids.append(b_id)
-            db.table("activity_logs").insert({
+            bulk_rows.append({
                 "id": b_id,
                 "user_id": pm_id,
                 "action": "BULK_TASK_EVENT",
@@ -264,7 +265,8 @@ def run_tests():
                 "project_id": proj1_id,
                 "description": f"Bulk activity log entry #{i:02d}",
                 "created_at": (now - timedelta(minutes=100 + i)).isoformat()
-            }).execute()
+            })
+        db.table("activity_logs").insert(bulk_rows).execute()
 
         context_large, raw_large = __import__("asyncio").run(_build_project_context(proj1_id))
         activities_in_raw = raw_large.get("activities", [])

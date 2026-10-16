@@ -154,11 +154,76 @@ from app.schemas.simulation import (
     DeadlineSimulationResponse,
     DeveloperUnavailabilitySimulationRequest,
     UnavailabilitySimulationResponse,
+    ProjectSimulatorData,
+    TaskEstimateUpdateRequest,
+    DeveloperCapacityUpdateRequest,
+    DeveloperCapacityInfo,
 )
 from app.services.simulation_service import (
     simulate_deadline_change,
     simulate_developer_unavailability,
+    get_project_simulator_data_service,
+    update_task_estimate_service,
+    update_developer_capacity_service,
 )
+
+@router.get(
+    "/{project_id}/simulator-data",
+    response_model=ProjectSimulatorData,
+    summary="Get simulator dataset (tasks, estimates, developer capacities)",
+)
+async def get_project_simulator_data(
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectSimulatorData:
+    """
+    Fetch all data needed for the What-If Simulator:
+    - Incomplete tasks and their current effort estimates
+    - Assigned developers and their weekly capacities
+    - Missing data indicators
+    """
+    return get_project_simulator_data_service(project_id, current_user)
+
+@router.patch(
+    "/{project_id}/tasks/{task_id}/estimate",
+    summary="Update task estimated hours for What-If Simulator",
+)
+async def update_project_task_estimate(
+    payload: TaskEstimateUpdateRequest,
+    project_id: str = Path(..., description="Project UUID"),
+    task_id: str = Path(..., description="Task UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> dict:
+    """
+    Allow authorized PMs or Admins to enter or update estimated hours for a task.
+    """
+    return update_task_estimate_service(
+        project_id=project_id,
+        task_id=task_id,
+        estimated_hours=payload.estimated_hours,
+        current_user=current_user,
+    )
+
+@router.patch(
+    "/{project_id}/developers/{developer_id}/capacity",
+    response_model=DeveloperCapacityInfo,
+    summary="Update developer weekly capacity hours",
+)
+async def update_project_developer_capacity(
+    payload: DeveloperCapacityUpdateRequest,
+    project_id: str = Path(..., description="Project UUID"),
+    developer_id: str = Path(..., description="Developer User UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> DeveloperCapacityInfo:
+    """
+    Allow authorized PMs or Admins to enter or update weekly available hours for an assigned developer.
+    """
+    return update_developer_capacity_service(
+        project_id=project_id,
+        developer_id=developer_id,
+        capacity_hours_per_week=payload.capacity_hours_per_week,
+        current_user=current_user,
+    )
 
 @router.post(
     "/{project_id}/simulate-deadline",
@@ -199,4 +264,5 @@ async def simulate_unavailability(
         payload=payload,
         current_user=current_user,
     )
+
 

@@ -11,6 +11,11 @@ from app.db.supabase_client import get_supabase_client
 from app.api.deps import get_current_user
 from app.schemas.user import UserOut
 from app.schemas.auth import RoleEnum
+from app.schemas.pulse import ProjectPulseRecommendationsResponse
+from app.schemas.pulse_briefing import ProjectPulseBriefingResponse
+from app.services.pulse_recommendations_service import generate_pulse_recommendations_service
+from app.services.pulse_briefing_service import generate_pulse_briefing_service
+from app.services.project_service import get_project_by_id_service
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -68,6 +73,15 @@ class DeveloperWorkload(BaseModel):
     overdue_tasks: int = 0
 
 
+class HealthScoreComponent(BaseModel):
+    reason: str
+    amount: int
+
+class ProjectHealth(BaseModel):
+    score: int
+    components: List[HealthScoreComponent] = []
+    data_completeness: str = "High"
+
 class ProjectSummary(BaseModel):
     id: str
     name: str
@@ -83,6 +97,7 @@ class ProjectSummary(BaseModel):
     todo_tasks: int = 0
     overdue_tasks: int = 0
     developers: List[DeveloperWorkload] = []
+    health: Optional[ProjectHealth] = None
 
 
 class OverdueTaskSummary(BaseModel):
@@ -342,6 +357,20 @@ async def get_pm_dashboard_stats(
             detail=f"Database error fetching tasks: {str(exc)}",
         )
 
+    # Fetch workflow risks to compute health score
+    try:
+        risks_resp = (
+            _db()
+            .table("workflow_risks")
+            .select("*")
+            .in_("project_id", project_ids)
+            .eq("is_resolved", False)
+            .execute()
+        )
+        all_risks = risks_resp.data or []
+    except Exception as exc:
+        all_risks = []
+
     # Fetch developer names for assigned users
     developer_ids = list(set(str(t["assigned_to"]) for t in all_tasks if t.get("assigned_to")))
     developers_map: dict = {}
@@ -432,6 +461,77 @@ async def get_pm_dashboard_stats(
             if is_overdue(t):
                 wl.overdue_tasks += 1
 
+        # Calculate Health Score
+        proj_risks = [r for r in all_risks if str(r.get("project_id")) == proj_id]
+        
+        components = []
+        score = 100
+        
+        has_dates = bool(proj.get("start_date") and proj.get("end_date"))
+        has_tasks = p_total > 0
+        
+        completeness_factors = []
+        if not has_tasks:
+            completeness_factors.append("No tasks")
+        if not has_dates:
+            completeness_factors.append("Missing schedule dates")
+            
+        if not has_tasks and not has_dates:
+            data_completeness = "Low"
+        elif not has_tasks or not has_dates:
+            data_completeness = "Medium"
+        else:
+            data_completeness = "High"
+            
+        task_ids_with_risks = set(str(r.get("task_id")) for r in proj_risks if r.get("task_id"))
+        
+        crit_count = sum(1 for r in proj_risks if str(r.get("level", "")).lower() == "critical")
+        high_count = sum(1 for r in proj_risks if str(r.get("level", "")).lower() == "high")
+        med_count  = sum(1 for r in proj_risks if str(r.get("level", "")).lower() == "medium")
+        
+        if crit_count > 0:
+            amt = crit_count * 15
+            score -= amt
+            components.append(HealthScoreComponent(reason=f"{crit_count} Critical Risk(s)", amount=amt))
+        if high_count > 0:
+            amt = high_count * 10
+            score -= amt
+            components.append(HealthScoreComponent(reason=f"{high_count} High Risk(s)", amount=amt))
+        if med_count > 0:
+            amt = med_count * 5
+            score -= amt
+            components.append(HealthScoreComponent(reason=f"{med_count} Medium Risk(s)", amount=amt))
+            
+        # Overdue tasks (avoid double counting)
+        overdue_tasks_no_risk = [t for t in proj_tasks if is_overdue(t) and str(t["id"]) not in task_ids_with_risks]
+        if overdue_tasks_no_risk:
+            amt = len(overdue_tasks_no_risk) * 3
+            score -= amt
+            components.append(HealthScoreComponent(reason=f"{len(overdue_tasks_no_risk)} Overdue Task(s) (Unmitigated)", amount=amt))
+            
+        if has_dates:
+            try:
+                st_dt = datetime.fromisoformat(str(proj["start_date"]).replace("Z", "+00:00"))
+                en_dt = datetime.fromisoformat(str(proj["end_date"]).replace("Z", "+00:00"))
+                if now > st_dt and en_dt > st_dt:
+                    elapsed = min((now - st_dt).total_seconds() / (en_dt - st_dt).total_seconds(), 1.0)
+                    exp_prog = int(elapsed * 100)
+                    act_prog = proj.get("progress") or 0
+                    if act_prog < exp_prog - 10:
+                        amt = exp_prog - act_prog
+                        score -= amt
+                        components.append(HealthScoreComponent(reason=f"Schedule lag (Expected {exp_prog}%, Actual {act_prog}%)", amount=amt))
+            except Exception:
+                pass
+                
+        if data_completeness != "High":
+            components.append(HealthScoreComponent(
+                reason=f"Data completeness is {data_completeness}: {', '.join(completeness_factors)}",
+                amount=0
+            ))
+            
+        proj_health = ProjectHealth(score=max(0, score), components=components, data_completeness=data_completeness)
+
         # Collect overdue tasks for this project
         for t in proj_tasks:
             if is_overdue(t):
@@ -464,6 +564,7 @@ async def get_pm_dashboard_stats(
             todo_tasks=p_todo,
             overdue_tasks=p_overdue,
             developers=list(dev_workloads.values()),
+            health=proj_health,
         ))
 
     # Aggregate project-level status counts
@@ -508,6 +609,7 @@ async def get_pm_dashboard_stats(
 )
 async def get_pm_activity(
     limit: int = 20,
+    project_id: Optional[str] = None,
     current_user: UserOut = Depends(get_current_user),
 ) -> List[ActivityItem]:
     """
@@ -536,6 +638,8 @@ async def get_pm_activity(
                 .execute()
             )
             managed_project_ids = [str(p["id"]) for p in (proj_resp.data or [])]
+            if project_id and project_id not in managed_project_ids:
+                return []
         else:
             # Admin sees all activity
             managed_project_ids = None
@@ -545,15 +649,18 @@ async def get_pm_activity(
             detail=f"Database error fetching projects: {str(exc)}",
         )
 
+    # Determine project filter
+    target_projects = [project_id] if project_id else managed_project_ids
+
     # Also get task IDs in those projects so we can show task-level activity
     task_ids_for_activity: list = []
-    if managed_project_ids is not None and managed_project_ids:
+    if target_projects is not None and target_projects:
         try:
             task_id_resp = (
                 _db()
                 .table("tasks")
                 .select("id")
-                .in_("project_id", managed_project_ids)
+                .in_("project_id", target_projects)
                 .execute()
             )
             task_ids_for_activity = [str(t["id"]) for t in (task_id_resp.data or [])]
@@ -563,11 +670,11 @@ async def get_pm_activity(
     try:
         query = _db().table("activity_logs").select("*, users(id, name, email)")
 
-        if managed_project_ids is not None:
-            if not managed_project_ids:
+        if target_projects is not None:
+            if not target_projects:
                 return []
             # Filter to activity on managed projects OR their tasks
-            all_entity_ids = managed_project_ids + task_ids_for_activity
+            all_entity_ids = target_projects + task_ids_for_activity
             query = query.in_("entity_id", all_entity_ids)
 
         resp = query.order("created_at", desc=True).limit(limit).execute()
@@ -658,3 +765,49 @@ async def get_pm_users(
             status_code=500,
             detail=f"Database error fetching users: {str(exc)}",
         )
+
+
+# ---------------------------------------------------------------------------
+# GET /dashboard/projects/{project_id}/pulse-recommendations
+# ---------------------------------------------------------------------------
+
+@router.get(
+    "/projects/{project_id}/pulse-recommendations",
+    response_model=ProjectPulseRecommendationsResponse,
+    summary="Get Phase 4 AI-grounded recovery recommendations for Project Pulse",
+)
+async def get_project_pulse_recommendations(
+    project_id: str,
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectPulseRecommendationsResponse:
+    """
+    Generate practical, evidence-grounded recovery recommendations for project managers.
+    Enforces project isolation via get_project_by_id_service.
+    Health score is strictly deterministic and never overridden.
+    """
+    get_project_by_id_service(project_id, current_user)
+    return await generate_pulse_recommendations_service(project_id)
+
+
+# ---------------------------------------------------------------------------
+# GET /dashboard/projects/{project_id}/pulse-briefing
+# ---------------------------------------------------------------------------
+
+@router.get(
+    "/projects/{project_id}/pulse-briefing",
+    response_model=ProjectPulseBriefingResponse,
+    summary="Get Phase 5 AI-grounded project briefing for Project Pulse",
+)
+async def get_project_pulse_briefing(
+    project_id: str,
+    current_user: UserOut = Depends(get_current_user),
+) -> ProjectPulseBriefingResponse:
+    """
+    Generate a concise, current, evidence-grounded project briefing for project managers.
+    Enforces project isolation via get_project_by_id_service.
+    Health score is strictly deterministic and uncompromised.
+    """
+    get_project_by_id_service(project_id, current_user)
+    return await generate_pulse_briefing_service(project_id)
+
+

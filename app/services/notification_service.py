@@ -58,6 +58,8 @@ class NotificationService:
             )
             if task_id:
                 query = query.eq("task_id", task_id)
+            if project_id:
+                query = query.eq("project_id", project_id)
 
             resp = query.execute()
             if resp.data:
@@ -75,6 +77,7 @@ class NotificationService:
                     and v["type"] == type_str
                     and v["title"] == title
                     and (not task_id or v.get("task_id") == task_id)
+                    and (not project_id or v.get("project_id") == project_id)
                 ]
                 if recent:
                     recent.sort(key=lambda x: x["created_at"], reverse=True)

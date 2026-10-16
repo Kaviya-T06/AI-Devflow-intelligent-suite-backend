@@ -111,3 +111,98 @@ def test_invalid_input_handled_by_pydantic():
     from pydantic import ValidationError
     with pytest.raises(ValidationError):
         DeadlineSimulationRequest(proposed_deadline="invalid date")
+
+def test_count_working_days():
+    from app.services.simulation_service import count_working_days
+    # Friday Oct 16, 2026 to Saturday Oct 31, 2026
+    # Oct 19-23 (5 days) + Oct 26-30 (5 days) = 10 working days
+    start = date(2026, 10, 16)
+    end = date(2026, 10, 31)
+    assert count_working_days(start, end) == 10
+    
+    # Same day = 0 working days
+    assert count_working_days(start, start) == 0
+
+@pytest.mark.asyncio
+async def test_compare_oct31_current_with_oct16_proposed(mocker):
+    """
+    Requirement 7 test:
+    Current deadline: October 31, 2026
+    Proposed deadline: October 16, 2026
+    Verify schedule concerns based on effort, capacity, remaining tasks, and working days.
+    """
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    # Today is date.today(), mock baseline end_date = 2026-10-31
+    cur_deadline = date(2026, 10, 31)
+    proposed = date(2026, 10, 16)
+    project = MockProject(id="p_emp", pm_id="user1", end_date=cur_deadline)
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service._generate_ai_explanation", return_value="AI analysis")
+
+    # 3 tasks with 40h each = 120h total effort
+    mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "project_id": "p_emp", "status": "IN_PROGRESS", "assigned_to": "dev1", "estimated_hours": 40.0},
+        {"id": "t2", "project_id": "p_emp", "status": "TODO", "assigned_to": "dev2", "estimated_hours": 40.0},
+        {"id": "t3", "project_id": "p_emp", "status": "TODO", "assigned_to": "dev1", "estimated_hours": 40.0},
+        {"id": "t4", "project_id": "p_emp", "status": "COMPLETED", "assigned_to": "dev1", "estimated_hours": 20.0},
+    ]
+
+    # dev1 and dev2 both have 40 hrs/week
+    mock_db.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"id": "dev1", "full_name": "Dev One", "capacity_hours_per_week": 40.0},
+        {"id": "dev2", "full_name": "Dev Two", "capacity_hours_per_week": 40.0},
+    ]
+
+    payload = DeadlineSimulationRequest(proposed_deadline=proposed)
+    resp = await simulate_deadline_change("p_emp", payload, user)
+
+    # 3 incomplete tasks
+    assert resp.baseline.remaining_tasks == 3
+    assert resp.baseline.remaining_estimated_effort_hours == 120.0
+    assert resp.baseline.tasks_with_estimates == 3
+    assert resp.baseline.tasks_missing_estimates == 0
+
+    # Proposed deadline is Oct 16 (today) -> available capacity is 0
+    assert resp.scenario.available_capacity_hours == 0
+    # Capacity gap: 120h effort - 0h capacity = 120h gap
+    assert resp.scenario.capacity_gap_hours == 120
+    assert resp.scenario.capacity_gap_status == "calculated"
+    # Schedule concern is detected
+    assert any("Proposed deadline" in c for c in resp.scenario.schedule_concerns)
+    assert any("gap" in c.lower() for c in resp.scenario.schedule_concerns)
+
+@pytest.mark.asyncio
+async def test_partial_effort_calculation(mocker):
+    """
+    Requirement 4 & 8: If some tasks lack estimates, calculate what can be calculated
+    and clearly report the count of tasks missing estimates.
+    """
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    project = MockProject(id="p1", pm_id="user1", end_date=date.today() + timedelta(days=21))
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service._generate_ai_explanation", return_value="AI analysis")
+
+    # 2 tasks: 1 with 30 hrs estimate, 1 with None
+    mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "project_id": "p1", "status": "IN_PROGRESS", "assigned_to": "dev1", "estimated_hours": 30.0},
+        {"id": "t2", "project_id": "p1", "status": "TODO", "assigned_to": "dev1", "estimated_hours": None},
+    ]
+    mock_db.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"id": "dev1", "full_name": "Dev One", "capacity_hours_per_week": 40.0},
+    ]
+
+    payload = DeadlineSimulationRequest(proposed_deadline=date.today() + timedelta(days=14))
+    resp = await simulate_deadline_change("p1", payload, user)
+
+    # Remaining effort is 30.0 from known tasks
+    assert resp.baseline.remaining_estimated_effort_hours == 30.0
+    assert resp.baseline.tasks_with_estimates == 1
+    assert resp.baseline.tasks_missing_estimates == 1
+    assert any("1 of 2 remaining tasks lack effort estimates." in item for item in resp.scenario.missing_data_items)
+
