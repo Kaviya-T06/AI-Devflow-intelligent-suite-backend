@@ -169,28 +169,56 @@ def _get_project_tasks_and_capacities(project_id: str):
         has_unknown_capacity
     )
 
+def _synthesize_simulation_narrative(scenario_type: str, baseline_data: dict, scenario_data: dict) -> str:
+    """Fast, deterministic narrative based on verified simulation metrics."""
+    b_days = baseline_data.get("working_days", 0)
+    s_days = scenario_data.get("working_days", 0)
+    gap = scenario_data.get("capacity_gap_hours")
+    gap_status = scenario_data.get("capacity_gap_status")
+    s_cap = scenario_data.get("available_capacity_hours", 0)
+    rem_effort = scenario_data.get("remaining_estimated_effort_hours")
+
+    sentences = []
+    if scenario_type == "deadline change":
+        if s_days < b_days:
+            diff = b_days - s_days
+            sentences.append(f"The proposed deadline compresses the timeline by {diff} working day(s) (from {b_days} down to {s_days} days).")
+        elif s_days > b_days:
+            diff = s_days - b_days
+            sentences.append(f"The proposed deadline extends the timeline by {diff} working day(s) (from {b_days} up to {s_days} days).")
+        else:
+            sentences.append(f"The proposed deadline maintains {s_days} available working days.")
+    else:
+        removed = scenario_data.get("capacity_removed_hours", 0)
+        sentences.append(f"Simulating this developer unavailability temporarily removes approximately {removed} hours of developer capacity.")
+
+    if gap is not None and gap > 0:
+        sentences.append(f"This results in a projected capacity gap of {gap} hours, where remaining effort ({rem_effort or 'unknown'} hrs) exceeds available team capacity ({s_cap} hrs).")
+        sentences.append("Recommended recovery options include reallocating priority tasks, adjusting sprint scope, or adding developer capacity.")
+    elif gap_status == "unavailable":
+        sentences.append("A definitive capacity gap could not be computed because some tasks lack effort estimates or developers lack capacity records.")
+        sentences.append("Recommendation: Update remaining task estimates and developer weekly capacities to enable full gap analysis.")
+    else:
+        sentences.append(f"Available team capacity ({s_cap} hrs) is sufficient to cover the verified remaining effort under current assumptions.")
+
+    return " ".join(sentences)
+
+
 async def _generate_ai_explanation(scenario_type: str, baseline_data: dict, scenario_data: dict) -> str:
-    """Generate AI explanation for the simulation."""
+    """Generate AI explanation for the simulation with fast timeout and instant fallback."""
     try:
         from app.services.ai_service import ask_llm
         
         prompt = f"""
 You are an expert Project Management AI assistant.
-Analyze this {scenario_type} simulation scenario and provide a concise explanation (2-3 paragraphs) of the impact.
-Do NOT invent tasks, numbers, or dates. Only use the provided verified data.
-Acknowledge missing data if mentioned.
-Provide potential recovery options if there is a capacity gap or schedule compression.
-
-Baseline:
-{json.dumps(baseline_data, indent=2, default=str)}
-
-Scenario:
-{json.dumps(scenario_data, indent=2, default=str)}
+In 2-3 concise sentences, summarize the impact of this {scenario_type} simulation:
+Baseline: {json.dumps(baseline_data, default=str)}
+Scenario: {json.dumps(scenario_data, default=str)}
+State the working days, capacity gap, and 1 actionable recovery option.
 """
-        return await ask_llm(prompt)
-    except Exception as e:
-        print(f"Failed to generate AI explanation: {e}")
-        return "AI explanation is temporarily unavailable."
+        return await asyncio.wait_for(ask_llm(prompt), timeout=3.5)
+    except Exception:
+        return _synthesize_simulation_narrative(scenario_type, baseline_data, scenario_data)
 
 async def simulate_deadline_change(
     project_id: str,

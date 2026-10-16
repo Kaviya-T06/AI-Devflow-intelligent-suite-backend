@@ -425,6 +425,24 @@ async def delete_user(
         )
 
     try:
+        # Clean up related records in profiles if present
+        try:
+            _db().table("profiles").delete().eq("id", user_id).execute()
+        except Exception:
+            pass
+
+        # Nullify user assignment in tasks so task foreign keys don't fail
+        try:
+            _db().table("tasks").update({"assigned_to": None}).eq("assigned_to", user_id).execute()
+        except Exception:
+            pass
+
+        # Remove branch developer assignments for this user
+        try:
+            _db().table("project_branch_assignments").delete().eq("developer_id", user_id).execute()
+        except Exception:
+            pass
+
         _db().table("users").delete().eq("id", user_id).execute()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed to delete user: {exc}")
