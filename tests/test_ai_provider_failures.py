@@ -22,14 +22,11 @@ def run_tests():
     print("AI DevFlow -- AI Provider Failures Tests")
     print("=======================================================\n")
 
-    passed_count = 0
-    total_count = 0
+    test_results: list[bool] = []
 
     def record_test(name: str, passed: bool, details: str = ""):
-        nonlocal passed_count, total_count
-        total_count += 1
+        test_results.append(passed)
         if passed:
-            passed_count += 1
             print(f"  [PASS] {name}")
         else:
             print(f"  [FAIL] {name} -- {details}")
@@ -107,10 +104,13 @@ def run_tests():
         except:
             pass
 
+    total_count = len(test_results)
+    passed_count = sum(1 for p in test_results if p)
+    pct = (passed_count / total_count * 100) if total_count > 0 else 0.0
     print(f"\n=======================================================")
-    print(f"Results: {passed_count}/{total_count} tests passed ({(passed_count/total_count)*100:.1f}%)")
+    print(f"Results: {passed_count}/{total_count} tests passed ({pct:.1f}%)")
     print(f"=======================================================")
-    if passed_count < total_count:
+    if total_count == 0 or passed_count < total_count:
         sys.exit(1)
 
 if __name__ == "__main__":
