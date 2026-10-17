@@ -121,9 +121,13 @@ class TaskOut(BaseModel):
     completed_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+    acceptance_criteria: Optional[str] = None
+
     # Joined fields
     project_name: Optional[str] = None
     developer_name: Optional[str] = None
+    project_manager_id: Optional[str] = None
+    project_manager_name: Optional[str] = None
 
     # Optional joined entities
     project: Optional[dict] = None

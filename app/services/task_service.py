@@ -101,6 +101,14 @@ def _row_to_task_out(r: dict) -> TaskOut:
     elif isinstance(user_data, list):
         user_data = {}
 
+    pm_id = str(project_data.get("project_manager_id")) if project_data.get("project_manager_id") else None
+    pm_user = project_data.get("users") or {}
+    if isinstance(pm_user, list) and len(pm_user) > 0:
+        pm_user = pm_user[0]
+    elif not isinstance(pm_user, dict):
+        pm_user = {}
+    pm_name = pm_user.get("name") if pm_user else None
+
     return TaskOut(
         id=str(r["id"]),
         project_id=str(r["project_id"]) if r.get("project_id") else None,
@@ -120,8 +128,11 @@ def _row_to_task_out(r: dict) -> TaskOut:
         review_started_at=r.get("review_started_at"),
         completed_at=r.get("completed_at"),
         updated_at=r.get("updated_at"),
+        acceptance_criteria=r.get("acceptance_criteria"),
         project_name=project_data.get("name") if project_data else None,
         developer_name=user_data.get("name") if user_data else None,
+        project_manager_id=pm_id,
+        project_manager_name=pm_name,
     )
 
 

@@ -4,7 +4,7 @@ All authentication is verified against the `public.users` table using FastAPI JW
 """
 import logging
 from typing import Callable, List, Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 
@@ -23,16 +23,32 @@ def get_db():
 
 
 async def get_current_user(
+    request: Request,
     creds: Optional[HTTPAuthorizationCredentials] = Depends(_bearer_scheme),
 ) -> UserOut:
     """
     Validate the Bearer JWT token and return the active UserOut from public.users.
+    Supports Authorization header or query parameter 'token' (for media preview/downloads).
     Raises:
         HTTP 401 if token is missing, invalid, or expired.
         HTTP 401 if user does not exist in the database.
         HTTP 403 if user account is deactivated.
     """
-    if not creds or not creds.credentials:
+    token_str: Optional[str] = None
+    if creds and creds.credentials:
+        token_str = creds.credentials.strip()
+    else:
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth_header:
+            auth_header = auth_header.strip()
+            if auth_header.lower().startswith("bearer "):
+                token_str = auth_header[7:].strip()
+            else:
+                token_str = auth_header
+        elif request.query_params.get("token"):
+            token_str = request.query_params.get("token", "").strip()
+
+    if not token_str:
         logger.warning("Auth failure: Missing Authorization header or empty credentials.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,8 +56,11 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if token_str.lower().startswith("bearer "):
+        token_str = token_str[7:].strip()
+
     try:
-        payload = decode_access_token(creds.credentials)
+        payload = decode_access_token(token_str)
     except JWTError as err:
         logger.warning(f"Auth failure: Malformed, expired, or invalid JWT signature. Error: {err}")
         raise HTTPException(
