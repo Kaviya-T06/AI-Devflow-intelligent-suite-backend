@@ -126,34 +126,57 @@ async def disconnect_repository(project_id: str, user: UserOut = Depends(get_cur
     
     return {"message": "Repository disconnected successfully"}
 
-from app.core.config import settings
+from app.core.config import settings, get_github_token
 
 async def fetch_github_api(url: str):
     headers = {
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "AI-DevFlow-Intelligence-Suite/1.0",
     }
-    if hasattr(settings, "GITHUB_TOKEN") and settings.GITHUB_TOKEN:
-        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN}"
+    token = get_github_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
 
-    async with httpx.AsyncClient(headers=headers, follow_redirects=True) as client:
+    async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=15.0) as client:
         try:
             response = await client.get(url)
 
             if response.status_code == 401:
-                raise HTTPException(status_code=502, detail="GitHub API authentication failed.")
+                raise HTTPException(
+                    status_code=401,
+                    detail="GitHub API authentication failed: Invalid or expired GitHub token. Please verify your token configuration."
+                )
             elif response.status_code == 403:
-                if response.headers.get("x-ratelimit-remaining") == "0":
-                    raise HTTPException(status_code=502, detail="GitHub API rate limit exceeded.")
+                if response.headers.get("x-ratelimit-remaining") == "0" or "rate limit" in response.text.lower():
+                    raise HTTPException(
+                        status_code=429,
+                        detail="GitHub API rate limit exceeded. Please wait before retrying or configure an authenticated GitHub token."
+                    )
                 else:
-                    raise HTTPException(status_code=502, detail="GitHub API forbidden.")
+                    raise HTTPException(
+                        status_code=403,
+                        detail="GitHub API access forbidden: The configured token lacks required permissions for this repository."
+                    )
             elif response.status_code == 404:
-                raise HTTPException(status_code=404, detail="GitHub resource not found.")
+                raise HTTPException(
+                    status_code=404,
+                    detail="GitHub resource not found. Verify the repository exists and is accessible."
+                )
 
             response.raise_for_status()
             return response.json()
+        except HTTPException:
+            raise
+        except httpx.TimeoutException:
+            raise HTTPException(
+                status_code=504,
+                detail="GitHub API request timed out. Please check your network connection and retry."
+            )
         except httpx.RequestError as exc:
-            raise HTTPException(status_code=502, detail=f"Network error communicating with GitHub API: {exc}")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Network error communicating with GitHub API: {exc}"
+            )
 
 @router.post("/projects/{project_id}/repository/sync", response_model=GitHubRepositoryOut)
 async def sync_repository(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -185,7 +208,7 @@ async def get_commits(project_id: str, user: UserOut = Depends(get_current_user)
     
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
         
     repo = repo_resp.data[0]
     try:
@@ -204,7 +227,7 @@ async def get_commits(project_id: str, user: UserOut = Depends(get_current_user)
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch commits: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch commits: {str(e)}")
 
 @router.get("/projects/{project_id}/pulls", response_model=List[GitHubPullRequest])
 async def get_pull_requests(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -213,7 +236,7 @@ async def get_pull_requests(project_id: str, user: UserOut = Depends(get_current
     
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
         
     repo = repo_resp.data[0]
     try:
@@ -234,7 +257,7 @@ async def get_pull_requests(project_id: str, user: UserOut = Depends(get_current
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch pull requests: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch pull requests: {str(e)}")
 
 @router.get("/projects/{project_id}/issues", response_model=List[GitHubIssue])
 async def get_issues(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -243,7 +266,7 @@ async def get_issues(project_id: str, user: UserOut = Depends(get_current_user))
     
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
         
     repo = repo_resp.data[0]
     try:
@@ -264,7 +287,7 @@ async def get_issues(project_id: str, user: UserOut = Depends(get_current_user))
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch issues: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch issues: {str(e)}")
 
 @router.get("/projects/{project_id}/branches", response_model=List[GitHubBranch])
 async def get_branches(project_id: str, user: UserOut = Depends(get_current_user)):
@@ -273,7 +296,7 @@ async def get_branches(project_id: str, user: UserOut = Depends(get_current_user
     
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
         
     repo = repo_resp.data[0]
     try:
@@ -408,7 +431,7 @@ async def get_branches(project_id: str, user: UserOut = Depends(get_current_user
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch branches: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch branches: {str(e)}")
 
 
 @router.get("/projects/{project_id}/assignable-developers", response_model=List[BranchAssignableDeveloper])
@@ -477,7 +500,7 @@ async def assign_branch_developer(
     # Verify repository connected
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected to this project")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
     repo = repo_resp.data[0]
 
     # Validate developer exists and is active
@@ -709,7 +732,7 @@ async def create_branch(
     
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected to this project")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
     repo = repo_resp.data[0]
     
     # Permission check: PM/Admin, or Developer assigned to task in project
@@ -744,17 +767,35 @@ async def create_branch(
             raise
             
     # Create branch using GitHub API POST /repos/{owner}/{repo}/git/refs
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if hasattr(settings, "GITHUB_TOKEN") and settings.GITHUB_TOKEN:
-        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN}"
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "AI-DevFlow-Intelligence-Suite/1.0"
+    }
+    token = get_github_token()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
         
-    async with httpx.AsyncClient(headers=headers) as client:
+    async with httpx.AsyncClient(headers=headers, timeout=15.0) as client:
         ref_payload = {"ref": f"refs/heads/{branch_name}", "sha": base_sha}
-        create_res = await client.post(f"https://api.github.com/repos/{repo['full_name']}/git/refs", json=ref_payload)
-        if create_res.status_code in [401, 403]:
-            raise HTTPException(status_code=502, detail="GitHub API permission denied: repository access token requires 'repo' or 'contents:write' permission to create branches.")
-        elif create_res.status_code not in [200, 201]:
-            raise HTTPException(status_code=create_res.status_code, detail=f"Failed to create branch: {create_res.text}")
+        try:
+            create_res = await client.post(f"https://api.github.com/repos/{repo['full_name']}/git/refs", json=ref_payload)
+            if create_res.status_code == 401:
+                raise HTTPException(status_code=401, detail="GitHub API authentication failed: Invalid or expired GitHub token.")
+            elif create_res.status_code == 403:
+                if create_res.headers.get("x-ratelimit-remaining") == "0" or "rate limit" in create_res.text.lower():
+                    raise HTTPException(status_code=429, detail="GitHub API rate limit exceeded.")
+                else:
+                    raise HTTPException(status_code=403, detail="GitHub API permission denied: repository access token requires 'repo' or 'contents:write' permission to create branches.")
+            elif create_res.status_code == 404:
+                raise HTTPException(status_code=404, detail=f"Repository '{repo['full_name']}' not found or token lacks write access to this repository.")
+            elif create_res.status_code not in [200, 201]:
+                raise HTTPException(status_code=create_res.status_code, detail=f"Failed to create branch: {create_res.text}")
+        except HTTPException:
+            raise
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=504, detail="GitHub API timed out while creating branch.")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=502, detail=f"Network error communicating with GitHub API: {exc}")
             
     # Persist activity log with full metadata
     db.table("activity_logs").insert({
@@ -822,7 +863,7 @@ async def associate_task_branch(
             
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected to this project")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
     repo = repo_resp.data[0]
     
     # Verify branch exists on GitHub
@@ -875,7 +916,7 @@ async def associate_task_pull_request(
             
     repo_resp = db.table("project_github_repositories").select("*").eq("project_id", project_id).execute()
     if not repo_resp.data:
-        raise HTTPException(status_code=404, detail="No repository connected to this project")
+        raise HTTPException(status_code=404, detail="No GitHub repository connected")
     repo = repo_resp.data[0]
     
     # Verify PR exists on connected repository

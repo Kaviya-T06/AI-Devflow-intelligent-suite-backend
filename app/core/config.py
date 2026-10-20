@@ -1,6 +1,7 @@
 """
 Application configuration — reads from environment variables / .env file.
 """
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -53,3 +54,35 @@ class Settings(BaseSettings):
 
 # Singleton — import this everywhere
 settings = Settings()
+
+_PLACEHOLDER_TOKENS = {
+    "your-github-token-here",
+    "your_github_token",
+    "your-token-here",
+    "your_token",
+    "placeholder",
+    "xxx",
+    "none",
+    "<token>",
+}
+
+
+def get_github_token() -> str:
+    """
+    Returns active GitHub token if configured and valid (non-placeholder).
+    Checks settings.GITHUB_TOKEN first, then environment variables GITHUB_TOKEN and GH_TOKEN.
+    Returns empty string if no valid token is available.
+    """
+    token = getattr(settings, "GITHUB_TOKEN", "")
+    if token and isinstance(token, str):
+        cleaned = token.strip()
+        if cleaned.lower() not in _PLACEHOLDER_TOKENS:
+            return cleaned
+
+    # Fallback to system environment variables
+    env_token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
+    cleaned_env = env_token.strip()
+    if cleaned_env and cleaned_env.lower() not in _PLACEHOLDER_TOKENS:
+        return cleaned_env
+
+    return ""
