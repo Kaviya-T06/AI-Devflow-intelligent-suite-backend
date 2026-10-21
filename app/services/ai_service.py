@@ -11,6 +11,7 @@ NEVER hardcode API keys or model names here.
 import asyncio
 import json
 import logging
+from typing import AsyncGenerator
 
 import httpx
 from fastapi import HTTPException
@@ -277,3 +278,24 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
         status_code=502,
         detail="AI provider failed after all retries."
     )
+
+
+async def ask_llm_stream(prompt: str) -> AsyncGenerator[str, None]:
+    """
+    Streams output token chunks from the active AI provider.
+    Currently supports Ollama streaming with fallback to ask_llm.
+    """
+    provider = (settings.AI_PROVIDER or "").strip().lower()
+
+    if provider == "ollama":
+        from app.services.ollama_service import stream_ollama
+        logger.info(
+            "[AI Service] Streaming prompt from Ollama | Model: %s",
+            settings.OLLAMA_MODEL,
+        )
+        async for chunk in stream_ollama(prompt):
+            yield chunk
+    else:
+        full_text = await ask_llm(prompt, json_response=False)
+        yield full_text
+
