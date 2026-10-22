@@ -2,7 +2,10 @@
 Notification Service — manages persistence, retrieval, deduplication,
 and notification generation for user events.
 """
+import json
+import os
 from datetime import datetime, date, timezone
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from uuid import uuid4
 
@@ -12,9 +15,30 @@ from postgrest.exceptions import APIError
 from app.db.supabase_client import get_supabase_client
 from app.schemas.notification import NotificationCreate, NotificationOut, NotificationType
 
+_STORE_PATH = Path(__file__).resolve().parent.parent / "db" / ".notifications_store.json"
 
-# In-memory fallback store for when public.notifications table is not yet migrated in Supabase
-_fallback_notifications: Dict[str, Dict[str, Any]] = {}
+
+def _load_fallback_store() -> Dict[str, Dict[str, Any]]:
+    if _STORE_PATH.exists():
+        try:
+            with open(_STORE_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_fallback_store(store: Dict[str, Dict[str, Any]]) -> None:
+    try:
+        _STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(_STORE_PATH, "w", encoding="utf-8") as f:
+            json.dump(store, f, indent=2)
+    except Exception as e:
+        print(f"Warning: Failed to persist fallback notifications: {e}")
+
+
+# Persistent fallback store for when public.notifications table is not yet migrated in Supabase
+_fallback_notifications: Dict[str, Dict[str, Any]] = _load_fallback_store()
 
 
 def _is_table_missing_error(exc: Exception) -> bool:
@@ -65,6 +89,7 @@ class NotificationService:
                     project_id=project_id,
                     task_id=task_id,
                     is_read=True,
+                    read_at=now_iso,
                     created_at=now_iso,
                 )
 
@@ -117,6 +142,7 @@ class NotificationService:
                             project_id=latest.get("project_id"),
                             task_id=latest.get("task_id"),
                             is_read=latest.get("is_read", False),
+                            read_at=latest.get("read_at"),
                             created_at=latest["created_at"],
                         )
 
@@ -131,6 +157,7 @@ class NotificationService:
             "project_id": project_id,
             "task_id": task_id,
             "is_read": False,
+            "read_at": None,
             "created_at": now_iso,
             "updated_at": now_iso,
         }
@@ -148,12 +175,14 @@ class NotificationService:
                     project_id=str(row["project_id"]) if row.get("project_id") else None,
                     task_id=str(row["task_id"]) if row.get("task_id") else None,
                     is_read=bool(row.get("is_read", False)),
+                    read_at=str(row["read_at"]) if row.get("read_at") else None,
                     created_at=str(row["created_at"]),
                 )
         except Exception as exc:
             if _is_table_missing_error(exc):
-                # Save to in-memory fallback store
+                # Save to persistent fallback store
                 _fallback_notifications[new_id] = payload
+                _save_fallback_store(_fallback_notifications)
                 return NotificationOut(
                     id=new_id,
                     recipient_id=recipient_id,
@@ -163,6 +192,7 @@ class NotificationService:
                     project_id=project_id,
                     task_id=task_id,
                     is_read=False,
+                    read_at=None,
                     created_at=now_iso,
                 )
             raise exc
@@ -176,6 +206,7 @@ class NotificationService:
             project_id=project_id,
             task_id=task_id,
             is_read=False,
+            read_at=None,
             created_at=now_iso,
         )
 
@@ -202,6 +233,7 @@ class NotificationService:
                     project_id=str(row["project_id"]) if row.get("project_id") else None,
                     task_id=str(row["task_id"]) if row.get("task_id") else None,
                     is_read=bool(row.get("is_read", False)),
+                    read_at=str(row["read_at"]) if row.get("read_at") else None,
                     created_at=str(row["created_at"]),
                 )
         except Exception as exc:
@@ -217,6 +249,7 @@ class NotificationService:
                         project_id=row.get("project_id"),
                         task_id=row.get("task_id"),
                         is_read=row.get("is_read", False),
+                        read_at=row.get("read_at"),
                         created_at=row["created_at"],
                     )
         raise HTTPException(
@@ -226,19 +259,33 @@ class NotificationService:
 
     @staticmethod
     def list_user_notifications(
-        user_id: str, limit: int = 50, offset: int = 0
+        user_id: str,
+        limit: int = 50,
+        offset: int = 0,
+        status_filter: Optional[str] = None,
     ) -> Tuple[List[NotificationOut], int, int]:
         """
         List notifications belonging strictly to user_id.
+        Supports status_filter: 'all', 'unread', 'read'.
         Returns (items, unread_count, total_count).
         """
         db = get_supabase_client()
         try:
-            # Query items
-            resp = (
+            # Query items with optional read status filter
+            query = (
                 db.table("notifications")
                 .select("*")
                 .eq("recipient_id", user_id)
+            )
+            if status_filter:
+                sf = status_filter.lower().strip()
+                if sf == "unread":
+                    query = query.eq("is_read", False)
+                elif sf == "read":
+                    query = query.eq("is_read", True)
+
+            resp = (
+                query
                 .order("created_at", desc=True)
                 .range(offset, offset + limit - 1)
                 .execute()
@@ -255,12 +302,13 @@ class NotificationService:
                     project_id=str(r["project_id"]) if r.get("project_id") else None,
                     task_id=str(r["task_id"]) if r.get("task_id") else None,
                     is_read=bool(r.get("is_read", False)),
+                    read_at=str(r["read_at"]) if r.get("read_at") else None,
                     created_at=str(r["created_at"]),
                 )
                 for r in rows
             ]
 
-            # Unread count
+            # Unread count (always reflects true unread count for user)
             unread_resp = (
                 db.table("notifications")
                 .select("id", count="exact")
@@ -270,12 +318,16 @@ class NotificationService:
             )
             unread_count = unread_resp.count if unread_resp.count is not None else len([i for i in items if not i.is_read])
 
-            total_resp = (
-                db.table("notifications")
-                .select("id", count="exact")
-                .eq("recipient_id", user_id)
-                .execute()
-            )
+            # Total count (for pagination)
+            total_query = db.table("notifications").select("id", count="exact").eq("recipient_id", user_id)
+            if status_filter:
+                sf = status_filter.lower().strip()
+                if sf == "unread":
+                    total_query = total_query.eq("is_read", False)
+                elif sf == "read":
+                    total_query = total_query.eq("is_read", True)
+
+            total_resp = total_query.execute()
             total_count = total_resp.count if total_resp.count is not None else len(items)
 
             return items, unread_count, total_count
@@ -287,7 +339,21 @@ class NotificationService:
                     if v["recipient_id"] == user_id
                 ]
                 user_items.sort(key=lambda x: x["created_at"], reverse=True)
-                paginated = user_items[offset : offset + limit]
+
+                unread_count = len([r for r in user_items if not r.get("is_read", False)])
+
+                if status_filter:
+                    sf = status_filter.lower().strip()
+                    if sf == "unread":
+                        filtered_items = [r for r in user_items if not r.get("is_read", False)]
+                    elif sf == "read":
+                        filtered_items = [r for r in user_items if r.get("is_read", False)]
+                    else:
+                        filtered_items = user_items
+                else:
+                    filtered_items = user_items
+
+                paginated = filtered_items[offset : offset + limit]
                 items = [
                     NotificationOut(
                         id=r["id"],
@@ -298,12 +364,12 @@ class NotificationService:
                         project_id=r.get("project_id"),
                         task_id=r.get("task_id"),
                         is_read=r.get("is_read", False),
+                        read_at=r.get("read_at"),
                         created_at=r["created_at"],
                     )
                     for r in paginated
                 ]
-                unread_count = len([r for r in user_items if not r.get("is_read", False)])
-                return items, unread_count, len(user_items)
+                return items, unread_count, len(filtered_items)
             raise exc
 
     @staticmethod
@@ -352,7 +418,7 @@ class NotificationService:
                 )
 
             db.table("notifications").update(
-                {"is_read": True, "updated_at": now_iso}
+                {"is_read": True, "read_at": now_iso, "updated_at": now_iso}
             ).eq("id", notification_id).execute()
 
             return NotificationService._get_by_id(notification_id, user_id)
@@ -372,7 +438,9 @@ class NotificationService:
                         detail="Forbidden: Cannot modify another user's notification.",
                     )
                 item["is_read"] = True
+                item["read_at"] = now_iso
                 item["updated_at"] = now_iso
+                _save_fallback_store(_fallback_notifications)
                 return NotificationOut(
                     id=item["id"],
                     recipient_id=item["recipient_id"],
@@ -382,6 +450,7 @@ class NotificationService:
                     project_id=item.get("project_id"),
                     task_id=item.get("task_id"),
                     is_read=True,
+                    read_at=now_iso,
                     created_at=item["created_at"],
                 )
             raise exc
@@ -394,7 +463,7 @@ class NotificationService:
         try:
             resp = (
                 db.table("notifications")
-                .update({"is_read": True, "updated_at": now_iso})
+                .update({"is_read": True, "read_at": now_iso, "updated_at": now_iso})
                 .eq("recipient_id", user_id)
                 .eq("is_read", False)
                 .execute()
@@ -406,8 +475,11 @@ class NotificationService:
                 for item in _fallback_notifications.values():
                     if item["recipient_id"] == user_id and not item.get("is_read", False):
                         item["is_read"] = True
+                        item["read_at"] = now_iso
                         item["updated_at"] = now_iso
                         updated_count += 1
+                if updated_count > 0:
+                    _save_fallback_store(_fallback_notifications)
                 return updated_count
             raise exc
 
@@ -451,6 +523,7 @@ class NotificationService:
                         detail="Forbidden: Cannot delete another user's notification.",
                     )
                 del _fallback_notifications[notification_id]
+                _save_fallback_store(_fallback_notifications)
                 return True
             raise exc
 

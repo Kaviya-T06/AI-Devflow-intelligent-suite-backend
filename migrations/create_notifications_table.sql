@@ -15,6 +15,7 @@ CREATE TABLE public.notifications (
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     task_id UUID REFERENCES public.tasks(id) ON DELETE CASCADE,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

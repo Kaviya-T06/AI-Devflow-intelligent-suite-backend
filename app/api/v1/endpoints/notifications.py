@@ -21,14 +21,16 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 def list_notifications(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    status: Optional[str] = Query(None, description="all, unread, or read"),
     current_user: UserOut = Depends(get_current_user),
 ):
     """
     List notifications for the authenticated user.
     Only returns notifications belonging to the logged-in recipient.
+    Supports filtering by status: 'all', 'unread', or 'read'.
     """
     items, unread_count, total = NotificationService.list_user_notifications(
-        user_id=str(current_user.id), limit=limit, offset=offset
+        user_id=str(current_user.id), limit=limit, offset=offset, status_filter=status
     )
     return NotificationListOut(
         items=items,

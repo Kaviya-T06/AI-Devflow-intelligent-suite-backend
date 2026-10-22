@@ -38,6 +38,7 @@ class NotificationOut(BaseModel):
     project_id: Optional[str] = None
     task_id: Optional[str] = None
     is_read: bool = False
+    read_at: Optional[str] = None
     created_at: str
 
 
