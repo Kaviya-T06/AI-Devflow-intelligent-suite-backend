@@ -45,6 +45,29 @@ class NotificationService:
 
         type_str = type.value if isinstance(type, NotificationType) else type
 
+        # Check Do Not Disturb status for recipient
+        from app.services.presence_service import PresenceService
+        if PresenceService.is_dnd_active(recipient_id):
+            critical_types = {NotificationType.RISK_ALERT, NotificationType.TASK_OVERDUE}
+            is_critical = (
+                type in critical_types
+                or 'urgent' in title.lower()
+                or 'critical' in title.lower()
+            )
+            if not is_critical:
+                # User is in Do Not Disturb: suppress non-urgent notifications from alerting
+                return NotificationOut(
+                    id=str(uuid4()),
+                    recipient_id=recipient_id,
+                    type=NotificationType(type_str),
+                    title=f'[Muted - DND] {title}',
+                    message=message,
+                    project_id=project_id,
+                    task_id=task_id,
+                    is_read=True,
+                    created_at=now_iso,
+                )
+
         # Deduplication check: check if an identical notification was recently created
         try:
             query = (

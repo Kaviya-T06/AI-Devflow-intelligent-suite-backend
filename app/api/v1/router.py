@@ -27,6 +27,7 @@ from app.api.v1.endpoints.continuity import (
 )
 
 from app.api.v1.endpoints.notifications import router as notifications_router
+from app.api.v1.endpoints.presence import router as presence_router
 
 api_router = APIRouter()
 
@@ -47,6 +48,7 @@ api_router.include_router(settings_router)
 api_router.include_router(continuity_router)
 api_router.include_router(general_continuity_router)
 api_router.include_router(notifications_router)
+api_router.include_router(presence_router)
 
 # ---------------------------------------------------------------------------
 # Future routers (not yet implemented)
