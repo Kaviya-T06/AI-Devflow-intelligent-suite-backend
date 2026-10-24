@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
-
 # ---------------------------------------------------------------------------
 # Activity
 # ---------------------------------------------------------------------------
@@ -30,31 +29,24 @@ class ActivityOut(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Workflow Risks
+# Workflow Risks (Re-exported from app.schemas.workflow_risk)
 # ---------------------------------------------------------------------------
 
-class RiskLevel(str, Enum):
-    LOW = "Low"
-    MEDIUM = "Medium"
-    HIGH = "High"
-    CRITICAL = "Critical"
-
-
-class WorkflowRiskOut(BaseModel):
-    id: str
-    risk_type: str
-    title: str
-    description: str
-    severity: RiskLevel
-    project_id: Optional[str] = None
-    project_name: Optional[str] = None
-    task_id: Optional[str] = None
-    status: str
-    is_resolved: bool = False
-    detected_at: str
-    resolved_at: Optional[str] = None
-    created_at: str
-    updated_at: str
+from app.schemas.workflow_risk import (
+    RiskLevel,
+    RiskStatus,
+    RiskComment,
+    RiskHistoryEntry,
+    WorkflowRiskOut,
+    WorkflowRiskMetricsOut,
+    RiskStatusUpdateRequest,
+    RiskActionPlanRequest,
+    RiskCommentRequest,
+    RiskEscalateRequest,
+    RiskResolveRequest,
+    RiskReopenRequest,
+    RiskAssignRequest,
+)
 
 
 # ---------------------------------------------------------------------------

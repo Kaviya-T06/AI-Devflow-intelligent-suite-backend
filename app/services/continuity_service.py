@@ -874,7 +874,7 @@ def classify_question_intent(question: str) -> str:
     project_indicators = [
         "task", "tasks", "status", "progress", "who is", "who's", "working on", 
         "assigned", "assignee", "pr", "prs", "pull request", "pull requests", 
-        "commit", "commits", "branch", "branches", "blocker", "blockers", 
+        "commit", "commits", "branch", "branches", "blocker", "blockers", "bottleneck", "bottlenecks", "delay", "delays", 
         "risk", "risks", "overdue", "stuck", "handover", "continuity", 
         "backlog", "milestone", "sprint", "deadline", "repo", "repository",
         "deliverable", "deliverables", "what should i work on", "what should the next developer do",

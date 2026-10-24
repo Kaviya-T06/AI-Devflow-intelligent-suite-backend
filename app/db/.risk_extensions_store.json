@@ -1,0 +1,464 @@
+{
+  "7682d5a5-05cf-45ea-95f0-6942282933f3": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 4 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "COMPLETED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "c550452c-217b-41ac-b2b8-160fc2564081",
+        "timestamp": "2026-10-24T13:12:49.977385+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task remained in IN_PROGRESS state for 4 days."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "72c6a1f7-4f56-42cd-a4c3-f99947df4d4d",
+        "timestamp": "2026-10-24T13:12:59.237858+00:00"
+      }
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
+  },
+  "0ea380d1-bec0-47c9-8aa8-92e192b941ad": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 3 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "372765dd-099e-4839-9707-cfd6746acbd3",
+        "timestamp": "2026-10-24T13:12:49.977385+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task has been waiting in review queue for 3 days."
+      }
+    ]
+  },
+  "70da46d6-8f6c-42e9-b06f-0fad163a658b": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-21 by 3 day(s).",
+    "severity_reason": "Overdue by 3 days (High priority deadline breach)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "COMPLETED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "963f04d0-7084-4718-834d-307975ec2724",
+        "timestamp": "2026-10-24T13:12:49.977385+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task missed deadline of 2026-10-21 by 3 day(s)."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "b3dbd1a4-573f-4fc5-970c-ad13f4521838",
+        "timestamp": "2026-10-24T13:13:01.305168+00:00"
+      }
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
+  },
+  "2a8a555d-1b27-4fd6-af44-dd270d454be9": {
+    "detection_rule": "end_date < current_timestamp AND progress < 100",
+    "detection_reason": "Project passed schedule target of 2026-10-19 with progress at 40%.",
+    "severity_reason": "Project deadline breached with critical backlog (progress 40% < 50%)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "8c259ead-7e08-470c-9601-f3930a0681ac",
+        "timestamp": "2026-10-24T13:12:49.977385+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Project passed schedule target of 2026-10-19 with progress at 40%."
+      }
+    ]
+  },
+  "ab5146dc-18b4-4aa1-ae62-b3a417479362": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 5 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "IN_PROGRESS",
+    "is_escalated": true,
+    "comments": [
+      {
+        "id": "c3e2b678-6d41-4dfe-951e-f09fc83f9fc8",
+        "user_id": "83d5340f-4837-4200-abe4-df048158f702",
+        "user_name": "Test Dev",
+        "user_role": "developer",
+        "content": "Investigating root cause. PR opened to address the issue.",
+        "is_blocker": false,
+        "evidence_url": null,
+        "created_at": "2026-10-24T13:16:07.267044+00:00"
+      },
+      {
+        "id": "5f1e2d21-0a58-47fa-a3d8-eabccd163554",
+        "user_id": "83d5340f-4837-4200-abe4-df048158f702",
+        "user_name": "Test Dev",
+        "user_role": "developer",
+        "content": "Blocked: requires access to staging DB.",
+        "is_blocker": true,
+        "evidence_url": null,
+        "created_at": "2026-10-24T13:16:08.986268+00:00"
+      }
+    ],
+    "history": [
+      {
+        "id": "fc3bd49c-b5fc-450a-8368-2699e9ea5323",
+        "timestamp": "2026-10-24T13:15:52.461644+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task remained in IN_PROGRESS state for 5 days."
+      },
+      {
+        "user_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "user_name": "Test PM",
+        "action": "STATUS_IN_PROGRESS",
+        "details": "Investigation started",
+        "previous_value": "OPEN",
+        "new_value": "IN_PROGRESS",
+        "id": "00e85e32-2dd1-4a93-8601-d7796165f506",
+        "timestamp": "2026-10-24T13:16:00.399561+00:00"
+      },
+      {
+        "user_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "user_name": "Test PM",
+        "action": "ACTION_PLAN_CREATED",
+        "details": "Corrective action plan established: Review task with developer, identify blockers, and reschedule sprint delivery.... (Recovery target: 2026-10-27T13:15:47Z)",
+        "new_value": "Review task with developer, identify blockers, and reschedule sprint delivery.",
+        "id": "2959404b-006a-48a8-951d-7a9a8a4f5749",
+        "timestamp": "2026-10-24T13:16:04.520426+00:00"
+      },
+      {
+        "user_id": "83d5340f-4837-4200-abe4-df048158f702",
+        "user_name": "Test Dev",
+        "action": "PROGRESS_UPDATE",
+        "details": "Investigating root cause. PR opened to address the issue.",
+        "id": "47ac864a-42eb-4937-a3db-6263988741a9",
+        "timestamp": "2026-10-24T13:16:07.285098+00:00"
+      },
+      {
+        "user_id": "83d5340f-4837-4200-abe4-df048158f702",
+        "user_name": "Test Dev",
+        "action": "BLOCKER_FLAGGED",
+        "details": "BLOCKER: Blocked: requires access to staging DB.",
+        "id": "b1e68519-c729-459a-816a-73aa695bfb11",
+        "timestamp": "2026-10-24T13:16:08.999961+00:00"
+      },
+      {
+        "user_id": "83d5340f-4837-4200-abe4-df048158f702",
+        "user_name": "Test Dev",
+        "action": "ESCALATED",
+        "details": "Escalated to PROJECT_MANAGER by Test Dev: Need PM intervention to unblock staging access.",
+        "id": "5b8cb863-3b61-4a5b-8491-f395679773b2",
+        "timestamp": "2026-10-24T13:16:11.466446+00:00"
+      },
+      {
+        "user_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "user_name": "Test PM",
+        "action": "RESOLVED_VERIFIED",
+        "details": "Resolved: Task was reviewed and completed. Risk condition cleared. (Verified: Verified task moved to COMPLETED status.)",
+        "id": "eb1839da-bac2-4b10-8f7d-24a49f70f52b",
+        "timestamp": "2026-10-24T13:16:15.662854+00:00"
+      },
+      {
+        "user_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "user_name": "Test PM",
+        "action": "REOPENED",
+        "details": "Risk reopened by Test PM: Task regressed \u2014 reopening for tracking.",
+        "id": "e136c099-438a-44e7-820c-b32a6ac3c8e1",
+        "timestamp": "2026-10-24T13:16:19.249884+00:00"
+      },
+      {
+        "user_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "user_name": "Test PM",
+        "action": "OWNER_ASSIGNED",
+        "details": "Assigned risk ownership to Test PM",
+        "new_value": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+        "id": "ec7399d0-184a-4f4d-8b32-925266601e2d",
+        "timestamp": "2026-10-24T13:16:21.401938+00:00"
+      }
+    ],
+    "corrective_action_plan": "Review task with developer, identify blockers, and reschedule sprint delivery.",
+    "recovery_deadline": "2026-10-27T13:15:47Z",
+    "action_owner_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+    "is_action_overdue": false,
+    "escalated_to": "PROJECT_MANAGER",
+    "escalated_by": "83d5340f-4837-4200-abe4-df048158f702",
+    "escalated_at": "2026-10-24T13:16:11.301016+00:00",
+    "escalation_reason": "Need PM intervention to unblock staging access.",
+    "resolution_notes": "Task was reviewed and completed. Risk condition cleared.",
+    "resolved_by": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+    "verified_by": "6a786af2-ff3c-468e-9504-6ebed38a8d7e",
+    "verification_notes": "Verified task moved to COMPLETED status.",
+    "owner_id": "6a786af2-ff3c-468e-9504-6ebed38a8d7e"
+  },
+  "12bd6475-9bff-4b01-a551-8b1f8ceb076e": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7b505c8c-0a30-4b76-9f26-e53b27947cfc",
+        "timestamp": "2026-10-24T13:16:25.301990+00:00"
+      }
+    ]
+  },
+  "f4ceaf2e-49dc-4172-a14e-277928d5f27f": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-21 by 3 day(s).",
+    "severity_reason": "Overdue by 3 days (High priority deadline breach)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "COMPLETED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "8765a9e4-d727-4baa-b805-d91a3ee66d1a",
+        "timestamp": "2026-10-24T14:10:44.620270+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task missed deadline of 2026-10-21 by 3 day(s)."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7ed7a99c-6d3d-4f0c-afdc-f0928ce8704f",
+        "timestamp": "2026-10-24T14:10:54.469133+00:00"
+      }
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
+  },
+  "300c08e7-bbdd-4dbe-b339-e54851b0b524": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 4 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "COMPLETED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e94b7bb4-45c1-4df2-a1b7-2b7856750b73",
+        "timestamp": "2026-10-24T14:10:44.620270+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task remained in IN_PROGRESS state for 4 days."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "40b6fb37-d724-4260-9a56-8f6433b6a9f1",
+        "timestamp": "2026-10-24T14:10:52.881292+00:00"
+      }
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
+  },
+  "31c99caf-e364-4c9b-a107-7fd734fc4676": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 3 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "493ed426-521a-4203-8b34-c097cf3d8553",
+        "timestamp": "2026-10-24T14:10:44.620270+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task has been waiting in review queue for 3 days."
+      }
+    ]
+  },
+  "34bb3a7e-5552-4414-9dec-845a2e85a796": {
+    "detection_rule": "end_date < current_timestamp AND progress < 100",
+    "detection_reason": "Project passed schedule target of 2026-10-19 with progress at 40%.",
+    "severity_reason": "Project deadline breached with critical backlog (progress 40% < 50%)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "107fc6d7-a08d-4d3c-b61a-1edc4a963e0c",
+        "timestamp": "2026-10-24T14:10:44.620270+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Project passed schedule target of 2026-10-19 with progress at 40%."
+      }
+    ]
+  },
+  "df8a218e-4a3c-4b56-bad3-fbd8a4b551d4": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 5 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "IN_PROGRESS",
+    "is_escalated": true,
+    "comments": [
+      {
+        "id": "ac7edfc6-f5a4-4d33-85ce-f87e3705d04e",
+        "user_id": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+        "user_name": "Test Dev",
+        "user_role": "developer",
+        "content": "Investigating root cause. PR opened to address the issue.",
+        "is_blocker": false,
+        "evidence_url": null,
+        "created_at": "2026-10-24T14:14:31.976368+00:00"
+      },
+      {
+        "id": "73d9ad9d-ba9e-43a8-b3e5-50bc8a54f6cd",
+        "user_id": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+        "user_name": "Test Dev",
+        "user_role": "developer",
+        "content": "Blocked: requires access to staging DB.",
+        "is_blocker": true,
+        "evidence_url": null,
+        "created_at": "2026-10-24T14:14:33.922155+00:00"
+      }
+    ],
+    "history": [
+      {
+        "id": "94f52135-b16e-4ea2-817d-e342d6de3ca4",
+        "timestamp": "2026-10-24T14:14:17.025538+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task remained in IN_PROGRESS state for 5 days."
+      },
+      {
+        "user_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "user_name": "Test PM",
+        "action": "STATUS_IN_PROGRESS",
+        "details": "Investigation started",
+        "previous_value": "OPEN",
+        "new_value": "IN_PROGRESS",
+        "id": "1fb4ee0f-b45c-4cbf-b175-031b7767ac93",
+        "timestamp": "2026-10-24T14:14:24.639283+00:00"
+      },
+      {
+        "user_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "user_name": "Test PM",
+        "action": "ACTION_PLAN_CREATED",
+        "details": "Corrective action plan established: Review task with developer, identify blockers, and reschedule sprint delivery.... (Recovery target: 2026-10-27T14:14:12Z)",
+        "new_value": "Review task with developer, identify blockers, and reschedule sprint delivery.",
+        "id": "b6097675-a9c1-4b60-a936-94a98ab8b6cc",
+        "timestamp": "2026-10-24T14:14:28.712251+00:00"
+      },
+      {
+        "user_id": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+        "user_name": "Test Dev",
+        "action": "PROGRESS_UPDATE",
+        "details": "Investigating root cause. PR opened to address the issue.",
+        "id": "a29cb985-3291-4744-9d83-924f2afe55fb",
+        "timestamp": "2026-10-24T14:14:31.986890+00:00"
+      },
+      {
+        "user_id": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+        "user_name": "Test Dev",
+        "action": "BLOCKER_FLAGGED",
+        "details": "BLOCKER: Blocked: requires access to staging DB.",
+        "id": "74acda07-7560-4e74-a793-0dbcf622319b",
+        "timestamp": "2026-10-24T14:14:33.933674+00:00"
+      },
+      {
+        "user_id": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+        "user_name": "Test Dev",
+        "action": "ESCALATED",
+        "details": "Escalated to PROJECT_MANAGER by Test Dev: Need PM intervention to unblock staging access.",
+        "id": "d04e6e93-1fc7-4f10-b919-d23e0805543a",
+        "timestamp": "2026-10-24T14:14:36.601056+00:00"
+      },
+      {
+        "user_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "user_name": "Test PM",
+        "action": "RESOLVED_VERIFIED",
+        "details": "Resolved: Task was reviewed and completed. Risk condition cleared. (Verified: Verified task moved to COMPLETED status.)",
+        "id": "7451e427-3361-4ba0-8601-37e04c475f5b",
+        "timestamp": "2026-10-24T14:14:40.416965+00:00"
+      },
+      {
+        "user_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "user_name": "Test PM",
+        "action": "REOPENED",
+        "details": "Risk reopened by Test PM: Task regressed \u2014 reopening for tracking.",
+        "id": "bc8f38ae-8a0b-457e-95f5-e23ad0e4bdd3",
+        "timestamp": "2026-10-24T14:14:43.855003+00:00"
+      },
+      {
+        "user_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "user_name": "Test PM",
+        "action": "OWNER_ASSIGNED",
+        "details": "Assigned risk ownership to Test PM",
+        "new_value": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+        "id": "4e1976b2-0d2b-42cb-96b1-bee6339f985e",
+        "timestamp": "2026-10-24T14:14:46.327037+00:00"
+      }
+    ],
+    "corrective_action_plan": "Review task with developer, identify blockers, and reschedule sprint delivery.",
+    "recovery_deadline": "2026-10-27T14:14:12Z",
+    "action_owner_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+    "is_action_overdue": false,
+    "escalated_to": "PROJECT_MANAGER",
+    "escalated_by": "15f9d4fc-99f9-407a-8ba9-86790dfda101",
+    "escalated_at": "2026-10-24T14:14:36.432130+00:00",
+    "escalation_reason": "Need PM intervention to unblock staging access.",
+    "resolution_notes": "Task was reviewed and completed. Risk condition cleared.",
+    "resolved_by": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+    "verified_by": "b13fb462-5e8a-4f18-b64d-842249e80bb8",
+    "verification_notes": "Verified task moved to COMPLETED status.",
+    "owner_id": "b13fb462-5e8a-4f18-b64d-842249e80bb8"
+  },
+  "75f7bd4e-93dd-4386-a652-45cda45007cf": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1cf32707-d93e-4952-9c41-bd3eb159cb35",
+        "timestamp": "2026-10-24T14:14:51.322317+00:00"
+      }
+    ]
+  }
+}
