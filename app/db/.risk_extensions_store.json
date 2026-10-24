@@ -460,5 +460,39 @@
         "timestamp": "2026-10-24T14:14:51.322317+00:00"
       }
     ]
+  },
+  "26a13eac-adc9-43fb-bed3-0056d8f2177f": {
+    "is_escalated": true,
+    "escalated_to": "ADMIN",
+    "escalated_by": "06c569d4-d002-469f-a3be-79fc1a3c6c5d",
+    "escalated_at": "2026-10-24T16:05:55.928806+00:00",
+    "escalation_reason": "very important",
+    "history": [
+      {
+        "user_id": "06c569d4-d002-469f-a3be-79fc1a3c6c5d",
+        "user_name": "Alice Admin",
+        "action": "ESCALATED",
+        "details": "Escalated to ADMIN by Alice Admin: very important",
+        "id": "9722d4cc-218a-427f-809c-7b80c126ab4f",
+        "timestamp": "2026-10-24T16:05:56.150624+00:00"
+      }
+    ]
+  },
+  "57af058c-ea95-4979-b963-cc28d016b2e6": {
+    "is_escalated": true,
+    "escalated_to": "ADMIN",
+    "escalated_by": "41f10a56-12b2-4404-a19c-a0129ba19368",
+    "escalated_at": "2026-10-24T16:07:04.937409+00:00",
+    "escalation_reason": "Important",
+    "history": [
+      {
+        "user_id": "41f10a56-12b2-4404-a19c-a0129ba19368",
+        "user_name": "Tharun",
+        "action": "ESCALATED",
+        "details": "Escalated to ADMIN by Tharun: Important",
+        "id": "6f0e9d38-3e60-45d1-ab29-3d8237ede5be",
+        "timestamp": "2026-10-24T16:07:05.152297+00:00"
+      }
+    ]
   }
 }
