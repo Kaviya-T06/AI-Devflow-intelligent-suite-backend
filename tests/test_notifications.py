@@ -4,13 +4,14 @@ Covers:
 1. Listing notifications for authenticated user.
 2. Empty notifications for user with 0 notifications.
 3. Unread notification count.
-4. Mark single notification as read.
-5. Mark all notifications as read.
-6. Cross-user notification access denial (403/404).
-7. Delete notification.
-8. Event-based creation on task assignment.
-9. Overdue notification generation logic.
-10. Deduplication prevention (prevents duplicates within 60s).
+4. Mark single notification as read (preserves notification in history, populates read_at).
+5. Filter by status: 'all', 'unread', 'read'.
+6. Mark all notifications as read.
+7. Cross-user notification access denial (403/404).
+8. Delete notification (explicit deletion only).
+9. Event-based creation on task assignment.
+10. Overdue notification generation logic.
+11. Deduplication prevention (prevents duplicates within 60s).
 """
 import os
 import sys
@@ -49,6 +50,7 @@ def test_notification_service_flow():
     assert n1.id is not None
     assert n1.recipient_id == user1_id
     assert n1.is_read is False
+    assert n1.read_at is None
 
     # 3. List notifications for User 1
     items, unread_count, total = NotificationService.list_user_notifications(user1_id)
@@ -67,10 +69,28 @@ def test_notification_service_flow():
         NotificationService.mark_as_read(user2_id, n1.id)
     assert "403" in str(excinfo.value) or "Forbidden" in str(excinfo.value) or "404" in str(excinfo.value)
 
-    # 6. User 1 marks single notification as read
+    # 6. User 1 marks single notification as read:
+    # Notification remains in history (NOT deleted) and has read_at set
     marked = NotificationService.mark_as_read(user1_id, n1.id)
     assert marked.is_read is True
+    assert marked.read_at is not None
     assert NotificationService.get_unread_count(user1_id) == 0
+
+    # Verify notification is still present in history
+    all_items, unread_cnt, total_cnt = NotificationService.list_user_notifications(user1_id, status_filter="all")
+    assert len(all_items) == 1
+    assert all_items[0].id == n1.id
+    assert all_items[0].is_read is True
+    assert unread_cnt == 0
+
+    # Filter unread: should return empty
+    unread_items, _, _ = NotificationService.list_user_notifications(user1_id, status_filter="unread")
+    assert len(unread_items) == 0
+
+    # Filter read: should return n1
+    read_items, _, _ = NotificationService.list_user_notifications(user1_id, status_filter="read")
+    assert len(read_items) == 1
+    assert read_items[0].id == n1.id
 
     # 7. Create another notification and test mark_all_as_read
     n2 = NotificationService.create_notification(
@@ -80,18 +100,38 @@ def test_notification_service_flow():
         message="A critical workflow risk was detected.",
     )
     assert NotificationService.get_unread_count(user1_id) == 1
+
+    # Now All should have 2 notifications, Unread 1, Read 1
+    items_all, unread_cnt, _ = NotificationService.list_user_notifications(user1_id, status_filter="all")
+    assert len(items_all) == 2
+    assert unread_cnt == 1
+
+    items_unread, _, _ = NotificationService.list_user_notifications(user1_id, status_filter="unread")
+    assert len(items_unread) == 1
+    assert items_unread[0].id == n2.id
+
     updated_count = NotificationService.mark_all_as_read(user1_id)
     assert updated_count >= 1
     assert NotificationService.get_unread_count(user1_id) == 0
+
+    # Both are now read and remain in history
+    items_after, unread_after, _ = NotificationService.list_user_notifications(user1_id, status_filter="all")
+    assert len(items_after) == 2
+    assert unread_after == 0
 
     # 8. User 2 cannot delete User 1's notification
     with pytest.raises(Exception) as excinfo:
         NotificationService.delete_notification(user2_id, n2.id)
     assert "403" in str(excinfo.value) or "Forbidden" in str(excinfo.value) or "404" in str(excinfo.value)
 
-    # 9. User 1 deletes notification
+    # 9. User 1 deletes notification (explicit user action)
     deleted = NotificationService.delete_notification(user1_id, n2.id)
     assert deleted is True
+
+    # After explicit deletion, only n1 remains
+    items_remaining, _, _ = NotificationService.list_user_notifications(user1_id, status_filter="all")
+    assert len(items_remaining) == 1
+    assert items_remaining[0].id == n1.id
 
     # 10. Deduplication test: duplicate notification call within 60s returns same notification ID
     dup1 = NotificationService.create_notification(
@@ -120,6 +160,12 @@ def test_notification_api_endpoints():
     data = res.json()
     assert "items" in data
     assert "unread_count" in data
+
+    # GET /api/v1/notifications with status filter
+    res_unread = client.get("/api/v1/notifications?status=unread", headers=headers)
+    assert res_unread.status_code == 200
+    res_read = client.get("/api/v1/notifications?status=read", headers=headers)
+    assert res_read.status_code == 200
 
     # GET /api/v1/notifications/unread-count
     res = client.get("/api/v1/notifications/unread-count", headers=headers)
