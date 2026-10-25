@@ -4015,5 +4015,44 @@
     "read_at": null,
     "created_at": "2026-10-25T09:25:24.003227+00:00",
     "updated_at": "2026-10-25T09:25:24.003227+00:00"
+  },
+  "1ccc1cfa-e2ef-469c-983d-ae1e26f72953": {
+    "id": "1ccc1cfa-e2ef-469c-983d-ae1e26f72953",
+    "recipient_id": "f1dbb282-cada-4deb-9ea7-f691be8a22ee",
+    "type": "PROJECT_ASSIGNED",
+    "title": "New Project Assigned",
+    "message": "You have been assigned to the project \"Student Dropout Prediction\".",
+    "project_id": "6872fab9-0df1-41de-b55a-f12c34ecfa62",
+    "task_id": null,
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2026-10-25T14:38:18.616075+00:00",
+    "updated_at": "2026-10-25T14:38:18.616075+00:00"
+  },
+  "b1ab2309-0c20-4599-a87f-a61285af43ca": {
+    "id": "b1ab2309-0c20-4599-a87f-a61285af43ca",
+    "recipient_id": "10a332d5-5c90-4e59-ba22-c984f5052428",
+    "type": "TASK_ASSIGNED",
+    "title": "New Task Assigned",
+    "message": "You have been assigned the task \"Authentication\" in project \"Student Dropout Prediction\".",
+    "project_id": "6872fab9-0df1-41de-b55a-f12c34ecfa62",
+    "task_id": "803393ed-648b-4f9e-b2ff-736d9de40cda",
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2026-10-25T14:47:30.980849+00:00",
+    "updated_at": "2026-10-25T14:47:30.980849+00:00"
+  },
+  "1e1bb0f9-f7e8-4985-9609-643f694c7e2a": {
+    "id": "1e1bb0f9-f7e8-4985-9609-643f694c7e2a",
+    "recipient_id": "10a332d5-5c90-4e59-ba22-c984f5052428",
+    "type": "TASK_ASSIGNED",
+    "title": "New Task Assigned",
+    "message": "You have been assigned the task \"Login page\" in project \"Student Dropout Prediction\".",
+    "project_id": "6872fab9-0df1-41de-b55a-f12c34ecfa62",
+    "task_id": "d35d6a9b-8361-487e-af35-0ffed340b928",
+    "is_read": false,
+    "read_at": null,
+    "created_at": "2026-10-25T14:47:42.703554+00:00",
+    "updated_at": "2026-10-25T14:47:42.703554+00:00"
   }
 }
