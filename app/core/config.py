@@ -29,7 +29,14 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
     APP_SECRET_KEY: str = "change-me"
-    
+
+    # ------------------------------------------------------------------
+    # Role Authorization / Invitation Keys
+    # ------------------------------------------------------------------
+    ADMIN_INVITE_CODE: str = "DEVFLOW-ADMIN-SECURE-KEY"
+    MANAGER_INVITE_CODE: str = "DEVFLOW-PM-SECURE-KEY"
+    INVITATION_CODE: str = ""
+
     # ------------------------------------------------------------------
     # AI / Ollama Integration
     # ------------------------------------------------------------------

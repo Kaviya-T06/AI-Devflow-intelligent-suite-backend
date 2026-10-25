@@ -3374,10 +3374,10 @@
     "message": "Task 'Add validation and error handling' assigned to developer was due on 2026-10-08 and is overdue.",
     "project_id": "9706106d-c1e5-4e6d-afeb-b5da43abfd9e",
     "task_id": "e4b4f509-5da4-49d8-be89-0a77a5bf8f95",
-    "is_read": false,
-    "read_at": null,
+    "is_read": true,
+    "read_at": "2026-10-25T12:49:45.140875+00:00",
     "created_at": "2026-10-25T09:24:13.868086+00:00",
-    "updated_at": "2026-10-25T09:24:13.868086+00:00"
+    "updated_at": "2026-10-25T12:49:45.140875+00:00"
   },
   "764cab10-9043-48e7-baab-1a8e1acec512": {
     "id": "764cab10-9043-48e7-baab-1a8e1acec512",
