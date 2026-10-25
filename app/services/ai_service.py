@@ -11,7 +11,7 @@ NEVER hardcode API keys or model names here.
 import asyncio
 import json
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 import httpx
 from fastapi import HTTPException
@@ -49,14 +49,21 @@ def _classify_http_error(status_code: int) -> str:
 # Public API
 # ---------------------------------------------------------------------------
 
-async def ask_llm(prompt: str, json_response: bool = False) -> str:
+async def ask_llm(
+    prompt: str,
+    json_response: bool = False,
+    timeout: Optional[float] = None,
+    num_predict: Optional[int] = None,
+) -> str:
     """
-    Sends a prompt to the configured AI provider (Google Gemini API) and returns
+    Sends a prompt to the configured AI provider (Google Gemini API or Ollama) and returns
     the generated text.
 
     Args:
         prompt: The full prompt string to send to the model.
         json_response: If True, requests JSON-formatted output from the model.
+        timeout: Optional timeout override in seconds.
+        num_predict: Optional token limit override.
 
     Returns:
         The generated text string from the AI model.
@@ -75,7 +82,12 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
             settings.OLLAMA_MODEL,
             settings.OLLAMA_BASE_URL,
         )
-        return await ask_ollama(prompt, json_response=json_response)
+        call_kwargs = {"json_response": json_response}
+        if timeout is not None:
+            call_kwargs["timeout"] = timeout
+        if num_predict is not None:
+            call_kwargs["num_predict"] = num_predict
+        return await ask_ollama(prompt, **call_kwargs)
 
     api_key = settings.AI_API_KEY.strip()
     model = settings.AI_MODEL.strip() or "gemini-3.8-flash"
@@ -280,7 +292,11 @@ async def ask_llm(prompt: str, json_response: bool = False) -> str:
     )
 
 
-async def ask_llm_stream(prompt: str) -> AsyncGenerator[str, None]:
+async def ask_llm_stream(
+    prompt: str,
+    timeout: Optional[float] = None,
+    num_predict: Optional[int] = None,
+) -> AsyncGenerator[str, None]:
     """
     Streams output token chunks from the active AI provider.
     Currently supports Ollama streaming with fallback to ask_llm.
@@ -293,9 +309,9 @@ async def ask_llm_stream(prompt: str) -> AsyncGenerator[str, None]:
             "[AI Service] Streaming prompt from Ollama | Model: %s",
             settings.OLLAMA_MODEL,
         )
-        async for chunk in stream_ollama(prompt):
+        async for chunk in stream_ollama(prompt, timeout=timeout, num_predict=num_predict):
             yield chunk
     else:
-        full_text = await ask_llm(prompt, json_response=False)
+        full_text = await ask_llm(prompt, json_response=False, timeout=timeout, num_predict=num_predict)
         yield full_text
 

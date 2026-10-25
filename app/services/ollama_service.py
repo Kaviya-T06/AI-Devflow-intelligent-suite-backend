@@ -26,6 +26,7 @@ async def ask_ollama(
     json_response: bool = False,
     model: Optional[str] = None,
     timeout: Optional[float] = None,
+    num_predict: Optional[int] = None,
 ) -> str:
     """
     Sends a prompt to the configured local Ollama instance and returns the generated text.
@@ -35,6 +36,7 @@ async def ask_ollama(
         json_response: If True, sets format="json" in the request payload.
         model: Optional override for the model tag (defaults to settings.OLLAMA_MODEL).
         timeout: Optional override for request timeout (defaults to settings.OLLAMA_TIMEOUT).
+        num_predict: Optional override for maximum tokens to generate.
 
     Returns:
         The generated text string from the Ollama model.
@@ -47,13 +49,15 @@ async def ask_ollama(
     base_url = (settings.OLLAMA_BASE_URL or "http://localhost:11434").rstrip("/")
     active_model = (model or settings.OLLAMA_MODEL or "llama3.2:1b").strip()
     timeout_sec = float(timeout or settings.OLLAMA_TIMEOUT or 60.0)
+    pred_tokens = num_predict or (380 if json_response else 320)
 
     logger.info(
-        "[Ollama Service] Request starting | BaseUrl: %s | Model: %s | Json: %s | Timeout: %.1fs",
+        "[Ollama Service] Request starting | BaseUrl: %s | Model: %s | Json: %s | Timeout: %.1fs | Predict: %d",
         base_url,
         active_model,
         json_response,
         timeout_sec,
+        pred_tokens,
     )
 
     url = f"{base_url}/api/generate"
@@ -64,15 +68,15 @@ async def ask_ollama(
         "keep_alive": "60m",
         "options": {
             "temperature": 0.1,
-            "num_predict": 1024 if json_response else 800,
-            "num_ctx": 4096,
+            "num_predict": pred_tokens,
+            "num_ctx": 2048,
         },
     }
     if json_response:
         payload["format"] = "json"
 
-    # Use granular timeout: 10s connect, timeout_sec read
-    req_timeout = httpx.Timeout(timeout_sec, connect=10.0, read=timeout_sec, write=15.0)
+    # Use granular timeout: 8s connect, timeout_sec read
+    req_timeout = httpx.Timeout(timeout_sec, connect=8.0, read=timeout_sec, write=10.0)
 
     try:
         async with httpx.AsyncClient(timeout=req_timeout) as client:
@@ -101,10 +105,7 @@ async def ask_ollama(
         )
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail=(
-                f"Ollama request timed out after {timeout_sec:.0f}s "
-                f"(Model: {active_model}). The local model took too long to generate a response."
-            ),
+            detail="AI request timed out. The local model took too long to generate a response.",
         )
 
     except httpx.RequestError as req_err:
@@ -208,6 +209,7 @@ async def stream_ollama(
     prompt: str,
     model: Optional[str] = None,
     timeout: Optional[float] = None,
+    num_predict: Optional[int] = None,
 ) -> AsyncGenerator[str, None]:
     """
     Streams generated token chunks from Ollama /api/generate with stream=True.
@@ -216,6 +218,15 @@ async def stream_ollama(
     base_url = (settings.OLLAMA_BASE_URL or "http://localhost:11434").rstrip("/")
     active_model = (model or settings.OLLAMA_MODEL or "llama3.2:1b").strip()
     timeout_sec = float(timeout or settings.OLLAMA_TIMEOUT or 60.0)
+    pred_tokens = num_predict or 350
+
+    logger.info(
+        "[Ollama Service] Stream starting | BaseUrl: %s | Model: %s | Timeout: %.1fs | Predict: %d",
+        base_url,
+        active_model,
+        timeout_sec,
+        pred_tokens,
+    )
 
     url = f"{base_url}/api/generate"
     payload: Dict[str, Any] = {
@@ -225,12 +236,12 @@ async def stream_ollama(
         "keep_alive": "60m",
         "options": {
             "temperature": 0.1,
-            "num_predict": 1024,
-            "num_ctx": 4096,
+            "num_predict": pred_tokens,
+            "num_ctx": 2048,
         },
     }
 
-    req_timeout = httpx.Timeout(timeout_sec, connect=10.0, read=timeout_sec, write=15.0)
+    req_timeout = httpx.Timeout(timeout_sec, connect=8.0, read=timeout_sec, write=10.0)
 
     try:
         async with httpx.AsyncClient(timeout=req_timeout) as client:
@@ -260,10 +271,10 @@ async def stream_ollama(
             detail=f"Ollama service unavailable at {base_url}. Ensure Ollama is running locally."
         )
     except httpx.TimeoutException:
-        logger.error("[Ollama Service] Stream request timed out (model: %s)", active_model)
+        logger.error("[Ollama Service] Stream request timed out | BaseUrl: %s | Model: %s | Timeout: %.1fs", base_url, active_model, timeout_sec)
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail=f"Ollama stream request timed out after {timeout_sec:.0f}s (Model: {active_model})."
+            detail="AI stream request timed out. The local model took too long to generate a response."
         )
 
 

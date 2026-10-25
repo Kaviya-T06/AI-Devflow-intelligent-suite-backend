@@ -12,7 +12,25 @@ from app.api.v1.router import api_router
 
 # ---------------------------------------------------------------------------
 # Application factory
+from contextlib import asynccontextmanager
+import asyncio
+
 # ---------------------------------------------------------------------------
+# Lifespan: preload local Ollama model in background without blocking startup
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context manager."""
+    provider = (settings.AI_PROVIDER or "").lower().strip()
+    if provider == "ollama":
+        try:
+            from app.services.ollama_service import warmup_ollama
+            # Non-blocking background task — startup proceeds immediately even if Ollama is offline
+            asyncio.create_task(warmup_ollama())
+        except Exception:
+            pass
+    yield
 
 def create_application() -> FastAPI:
     """Create and configure the FastAPI application."""
@@ -27,6 +45,7 @@ def create_application() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         swagger_ui_parameters={"persistAuthorization": True},
+        lifespan=lifespan,
     )
 
     # ------------------------------------------------------------------

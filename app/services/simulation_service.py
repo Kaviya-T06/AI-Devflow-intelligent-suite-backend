@@ -192,11 +192,17 @@ def _synthesize_simulation_narrative(scenario_type: str, baseline_data: dict, sc
         removed = scenario_data.get("capacity_removed_hours", 0)
         sentences.append(f"Simulating this developer unavailability temporarily removes approximately {removed} hours of developer capacity.")
 
-    if gap is not None and gap > 0:
-        sentences.append(f"This results in a projected capacity gap of {gap} hours, where remaining effort ({rem_effort or 'unknown'} hrs) exceeds available team capacity ({s_cap} hrs).")
-        sentences.append("Recommended recovery options include reallocating priority tasks, adjusting sprint scope, or adding developer capacity.")
+    if gap is not None:
+        if gap < 0:
+            shortfall = abs(gap)
+            sentences.append(f"This results in a projected capacity shortfall of {shortfall:.1f} hours, where available team capacity ({s_cap} hrs) is insufficient for estimated effort ({rem_effort or 'unknown'} hrs).")
+            sentences.append("Recommended recovery options include reallocating priority tasks, adjusting sprint scope, or adding developer capacity.")
+        elif gap == 0:
+            sentences.append(f"Available team capacity ({s_cap} hrs) exactly matches the remaining estimated effort.")
+        else:
+            sentences.append(f"Available team capacity ({s_cap} hrs) provides a positive capacity buffer of {gap:.1f} hours over the verified remaining effort ({rem_effort} hrs), subject to scheduling constraints.")
     elif gap_status == "unavailable":
-        sentences.append("A definitive capacity gap could not be computed because some tasks lack effort estimates or developers lack capacity records.")
+        sentences.append("Some remaining tasks lack effort estimates. Add estimates to evaluate deadline feasibility accurately.")
         sentences.append("Recommendation: Update remaining task estimates and developer weekly capacities to enable full gap analysis.")
     else:
         sentences.append(f"Available team capacity ({s_cap} hrs) is sufficient to cover the verified remaining effort under current assumptions.")
@@ -311,47 +317,40 @@ async def simulate_deadline_change(
             f"Proposed deadline extends schedule by {days_gained} working day(s), adding {math.ceil(cap_gained)} hours of capacity."
         )
 
-    # Capacity Gap calculation: Capacity Gap = Remaining Effort - Available Capacity
+    # Capacity Gap calculation: Capacity Gap = Available Capacity - Estimated Effort Required
     capacity_gap = None
     capacity_gap_status = "calculated"
 
-    if tasks_with_estimates == 0 and len(pending_tasks) > 0:
+    if tasks_missing_estimates > 0:
+        capacity_gap = None
         capacity_gap_status = "unavailable"
-        schedule_concerns.append("Capacity gap cannot be calculated: no effort estimates recorded for remaining tasks.")
+        schedule_concerns.append(
+            f"Some remaining tasks lack effort estimates ({tasks_missing_estimates} of {len(pending_tasks)} unestimated). Add estimates to evaluate deadline feasibility accurately."
+        )
     elif len(developer_capacities) > 0 and developers_with_capacity == 0:
+        capacity_gap = None
         capacity_gap_status = "unavailable"
         schedule_concerns.append("Capacity gap cannot be calculated: assigned developers lack weekly capacity data.")
     else:
-        # We have data to calculate
-        if total_effort > scenario_capacity:
-            capacity_gap = total_effort - scenario_capacity
-            if tasks_missing_estimates == 0 and developers_missing_capacity == 0:
-                capacity_gap_status = "calculated"
-                schedule_concerns.append(
-                    f"Projected capacity gap of {math.ceil(capacity_gap)} hours detected: "
-                    f"remaining effort ({total_effort:.1f} hrs) exceeds available capacity ({scenario_capacity:.1f} hrs)."
-                )
-            else:
-                capacity_gap_status = "partial"
-                schedule_concerns.append(
-                    f"Projected capacity gap of at least {math.ceil(capacity_gap)} hours detected "
-                    f"(partial estimate: {tasks_missing_estimates} task(s) lack estimates, {developers_missing_capacity} dev(s) lack capacity)."
-                )
-        else:
-            capacity_gap = 0.0
-            if tasks_missing_estimates == 0 and developers_missing_capacity == 0:
-                capacity_gap_status = "calculated"
-                if len(pending_tasks) > 0:
-                    schedule_concerns.append(
-                        f"Available capacity ({scenario_capacity:.1f} hrs across {scenario_days} working days) "
-                        f"is sufficient to cover verified remaining effort ({total_effort:.1f} hrs)."
-                    )
-            else:
-                capacity_gap_status = "partial"
-                schedule_concerns.append(
-                    f"Available capacity currently covers known estimated tasks ({total_effort:.1f} hrs), "
-                    f"but {tasks_missing_estimates} task(s) still lack effort estimates."
-                )
+        # All required estimates and capacities exist
+        # Capacity Gap = Available Capacity - Estimated Effort Required
+        capacity_gap = scenario_capacity - total_effort
+        capacity_gap_status = "calculated"
+
+        if capacity_gap > 0:
+            schedule_concerns.append(
+                f"Sufficient capacity exists: available capacity ({scenario_capacity:.1f} hrs across {scenario_days} working days) exceeds estimated effort ({total_effort:.1f} hrs) by {capacity_gap:.1f} hrs, subject to scheduling constraints."
+            )
+        elif capacity_gap == 0:
+            schedule_concerns.append(
+                f"Capacity exactly matches estimated effort ({total_effort:.1f} hrs across {scenario_days} working days)."
+            )
+        else: # capacity_gap < 0
+            shortfall = abs(capacity_gap)
+            schedule_concerns.append(
+                f"Projected capacity shortfall of {shortfall:.1f} hours detected: "
+                f"estimated effort ({total_effort:.1f} hrs) exceeds available capacity ({scenario_capacity:.1f} hrs)."
+            )
 
     if not schedule_concerns:
         schedule_concerns.append("No immediate schedule concerns detected with this proposal.")
@@ -476,29 +475,31 @@ async def simulate_developer_unavailability(
     capacity_gap = None
     capacity_gap_status = "calculated"
 
-    if tasks_with_estimates == 0 and len(pending_tasks) > 0:
+    if tasks_missing_estimates > 0:
+        capacity_gap = None
         capacity_gap_status = "unavailable"
-        schedule_concerns.append("Capacity gap cannot be calculated: no effort estimates recorded for remaining tasks.")
+        schedule_concerns.append(
+            f"Some remaining tasks lack effort estimates ({tasks_missing_estimates} of {len(pending_tasks)} unestimated). Add estimates to evaluate deadline feasibility accurately."
+        )
     elif len(developer_capacities) > 0 and developers_with_capacity == 0:
+        capacity_gap = None
         capacity_gap_status = "unavailable"
         schedule_concerns.append("Capacity gap cannot be calculated: assigned developers lack capacity data.")
     else:
-        if total_effort > scenario_capacity:
-            capacity_gap = total_effort - scenario_capacity
-            if tasks_missing_estimates == 0 and developers_missing_capacity == 0:
-                capacity_gap_status = "calculated"
-                schedule_concerns.append(f"Projected overall capacity gap of {math.ceil(capacity_gap)} hours detected.")
-            else:
-                capacity_gap_status = "partial"
-                schedule_concerns.append(f"Projected overall capacity gap of at least {math.ceil(capacity_gap)} hours detected (partial estimate).")
+        # Capacity Gap = Available Capacity - Estimated Effort Required
+        capacity_gap = scenario_capacity - total_effort
+        capacity_gap_status = "calculated"
+        if capacity_gap > 0:
+            schedule_concerns.append(
+                f"Available capacity ({scenario_capacity:.1f} hrs) exceeds estimated effort ({total_effort:.1f} hrs) by {capacity_gap:.1f} hrs, subject to scheduling constraints."
+            )
+        elif capacity_gap == 0:
+            schedule_concerns.append("Available capacity exactly matches the estimated effort under stated assumptions.")
         else:
-            capacity_gap = 0.0
-            if tasks_missing_estimates == 0 and developers_missing_capacity == 0:
-                capacity_gap_status = "calculated"
-                schedule_concerns.append("Available capacity covers the estimated work under the stated assumptions.")
-            else:
-                capacity_gap_status = "partial"
-                schedule_concerns.append(f"Available capacity covers known estimated tasks, but {tasks_missing_estimates} task(s) lack estimates.")
+            shortfall = abs(capacity_gap)
+            schedule_concerns.append(
+                f"Projected capacity shortfall of {shortfall:.1f} hours detected: estimated effort ({total_effort:.1f} hrs) exceeds available capacity ({scenario_capacity:.1f} hrs)."
+            )
 
     if not schedule_concerns:
         schedule_concerns.append("No immediate schedule concerns detected with this proposal.")

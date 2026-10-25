@@ -167,12 +167,12 @@ async def test_compare_oct31_current_with_oct16_proposed(mocker):
 
     # Proposed deadline is Oct 16 (today) -> available capacity is 0
     assert resp.scenario.available_capacity_hours == 0
-    # Capacity gap: 120h effort - 0h capacity = 120h gap
-    assert resp.scenario.capacity_gap_hours == 120
+    # Capacity gap: Available Capacity (0) - Estimated Effort (120) = -120 (shortfall)
+    assert resp.scenario.capacity_gap_hours == -120
     assert resp.scenario.capacity_gap_status == "calculated"
     # Schedule concern is detected
     assert any("Proposed deadline" in c for c in resp.scenario.schedule_concerns)
-    assert any("gap" in c.lower() for c in resp.scenario.schedule_concerns)
+    assert any("shortfall" in c.lower() or "gap" in c.lower() for c in resp.scenario.schedule_concerns)
 
 @pytest.mark.asyncio
 async def test_partial_effort_calculation(mocker):
@@ -205,4 +205,94 @@ async def test_partial_effort_calculation(mocker):
     assert resp.baseline.tasks_with_estimates == 1
     assert resp.baseline.tasks_missing_estimates == 1
     assert any("1 of 2 remaining tasks lack effort estimates." in item for item in resp.scenario.missing_data_items)
+    # When estimates are missing, capacity gap is None and status is unavailable
+    assert resp.scenario.capacity_gap_hours is None
+    assert resp.scenario.capacity_gap_status == "unavailable"
+    assert any("Some remaining tasks lack effort estimates" in c for c in resp.scenario.schedule_concerns)
+
+@pytest.mark.asyncio
+async def test_capacity_exceeds_estimated_effort(mocker):
+    """Case 4: Available capacity exceeds estimated effort -> positive capacity gap."""
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    project = MockProject(id="p1", pm_id="user1", end_date=date.today() + timedelta(days=28))
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service._generate_ai_explanation", return_value="AI analysis")
+
+    # 2 tasks with 20h each = 40h total effort
+    mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "project_id": "p1", "status": "TODO", "assigned_to": "dev1", "estimated_hours": 20.0},
+        {"id": "t2", "project_id": "p1", "status": "IN_PROGRESS", "assigned_to": "dev1", "estimated_hours": 20.0},
+    ]
+    # Dev has 40h/week, 2 weeks to proposed deadline = 80h capacity
+    mock_db.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"id": "dev1", "full_name": "Dev One", "capacity_hours_per_week": 40.0},
+    ]
+
+    payload = DeadlineSimulationRequest(proposed_deadline=date.today() + timedelta(days=14))
+    resp = await simulate_deadline_change("p1", payload, user)
+
+    assert resp.scenario.available_capacity_hours == 80
+    assert resp.scenario.remaining_estimated_effort_hours == 40.0
+    # Capacity Gap = 80 - 40 = +40
+    assert resp.scenario.capacity_gap_hours == 40.0
+    assert resp.scenario.capacity_gap_status == "calculated"
+    assert any("Sufficient capacity exists" in c for c in resp.scenario.schedule_concerns)
+
+@pytest.mark.asyncio
+async def test_estimated_effort_exceeds_capacity(mocker):
+    """Case 5: Estimated effort exceeds available capacity -> negative capacity gap (shortfall)."""
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    project = MockProject(id="p1", pm_id="user1", end_date=date.today() + timedelta(days=28))
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service._generate_ai_explanation", return_value="AI analysis")
+
+    # 2 tasks with 50h each = 100h total effort
+    mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "project_id": "p1", "status": "TODO", "assigned_to": "dev1", "estimated_hours": 50.0},
+        {"id": "t2", "project_id": "p1", "status": "IN_PROGRESS", "assigned_to": "dev1", "estimated_hours": 50.0},
+    ]
+    # Dev has 20h/week, 2 weeks to proposed deadline = 40h capacity
+    mock_db.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"id": "dev1", "full_name": "Dev One", "capacity_hours_per_week": 20.0},
+    ]
+
+    payload = DeadlineSimulationRequest(proposed_deadline=date.today() + timedelta(days=14))
+    resp = await simulate_deadline_change("p1", payload, user)
+
+    assert resp.scenario.available_capacity_hours == 40
+    assert resp.scenario.remaining_estimated_effort_hours == 100.0
+    # Capacity Gap = 40 - 100 = -60 (shortfall of 60 hours)
+    assert resp.scenario.capacity_gap_hours == -60.0
+    assert resp.scenario.capacity_gap_status == "calculated"
+    assert any("shortfall of 60.0 hours" in c for c in resp.scenario.schedule_concerns)
+
+def test_update_task_estimate_service(mocker):
+    """Case 6: An estimate is saved and persists via update_task_estimate_service."""
+    from app.services.simulation_service import update_task_estimate_service
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    project = MockProject(id="p1", pm_id="user1", end_date=date.today() + timedelta(days=28))
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service.log_activity", return_value=None)
+
+    mock_db.table.return_value.select.return_value.eq.return_value.eq.return_value.limit.return_value.execute.return_value.data = [
+        {"id": "t1", "title": "Implement feature", "project_id": "p1"}
+    ]
+    mock_db.table.return_value.update.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "estimated_hours": 25.5, "estimated_effort": 25.5}
+    ]
+
+    result = update_task_estimate_service("p1", "t1", 25.5, user)
+    assert result["task_id"] == "t1"
+    assert result["estimated_hours"] == 25.5
+    assert "Successfully updated" in result["message"]
+
 
