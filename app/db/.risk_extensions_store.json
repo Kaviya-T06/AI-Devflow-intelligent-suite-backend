@@ -514,5 +514,18 @@
         "details": "Risk auto-detected: Project passed schedule target of 2026-10-25 with progress at 50%."
       }
     ]
+  },
+  "394568f9-07ba-4126-aec6-2b8968605237": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "3f66e77a-55ab-4d31-8c16-f681ecfd9563",
+        "timestamp": "2026-10-26T10:04:02.336726+00:00"
+      }
+    ]
   }
 }
