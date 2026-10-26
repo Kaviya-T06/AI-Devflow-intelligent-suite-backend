@@ -2,11 +2,15 @@
 Common API dependencies — authentication, database access, and RBAC guards.
 All authentication is verified against the `public.users` table using FastAPI JWT.
 """
+import asyncio
 import logging
 from typing import Callable, List, Optional
+
+import httpx
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
+from starlette.concurrency import run_in_threadpool
 
 from app.core.security import decode_access_token
 from app.db.supabase_client import get_supabase_client
@@ -15,11 +19,31 @@ from app.schemas.user import UserOut
 
 logger = logging.getLogger("app.api.deps")
 _bearer_scheme = HTTPBearer(auto_error=False)
+_AUTH_LOOKUP_ATTEMPTS = 3
+_AUTH_LOOKUP_RETRY_DELAY_SECONDS = 0.1
 
 
 def get_db():
     """Return Supabase client for database operations."""
     return get_supabase_client()
+
+
+def _fetch_user(user_id: str):
+    """Fetch the database row needed to authenticate a user."""
+    return (
+        get_supabase_client()
+        .table("users")
+        .select("id, name, email, role, is_active, created_at")
+        .eq("id", user_id)
+        .limit(1)
+        .execute()
+    )
+
+
+def _is_transient_database_error(exc: Exception) -> bool:
+    return isinstance(exc, httpx.TransportError) or (
+        isinstance(exc, OSError) and getattr(exc, "winerror", None) == 10035
+    )
 
 
 async def get_current_user(
@@ -79,21 +103,41 @@ async def get_current_user(
         )
 
     # Verify user existence and active status in DB
-    try:
-        db = get_supabase_client()
-        resp = (
-            db.table("users")
-            .select("id, name, email, role, is_active, created_at")
-            .eq("id", user_id)
-            .limit(1)
-            .execute()
-        )
-    except Exception as exc:
-        logger.error(f"Auth database lookup failed for user ID '{user_id}': {exc}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database lookup failed: {exc}",
-        )
+    for attempt in range(_AUTH_LOOKUP_ATTEMPTS):
+        try:
+            resp = await run_in_threadpool(_fetch_user, user_id)
+            break
+        except Exception as exc:
+            if not _is_transient_database_error(exc):
+                logger.error("Auth database lookup failed for user ID '%s': %s", user_id, exc)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Database lookup failed.",
+                ) from exc
+
+            if attempt + 1 < _AUTH_LOOKUP_ATTEMPTS:
+                logger.warning(
+                    "Transient auth database lookup failure for user ID '%s' "
+                    "(attempt %s/%s): %s",
+                    user_id,
+                    attempt + 1,
+                    _AUTH_LOOKUP_ATTEMPTS,
+                    exc,
+                )
+                await asyncio.sleep(_AUTH_LOOKUP_RETRY_DELAY_SECONDS * (attempt + 1))
+                continue
+
+            logger.error(
+                "Auth database unavailable for user ID '%s' after %s attempts: %s",
+                user_id,
+                _AUTH_LOOKUP_ATTEMPTS,
+                exc,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service temporarily unavailable.",
+                headers={"Retry-After": "1"},
+            ) from exc
 
     if not resp.data:
         logger.warning(f"Auth failure: Authenticated user ID '{user_id}' not found in public.users database.")
