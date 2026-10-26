@@ -40,6 +40,11 @@ class NotificationOut(BaseModel):
     is_read: bool = False
     read_at: Optional[str] = None
     created_at: str
+    project_name: Optional[str] = None
+    task_title: Optional[str] = None
+    assigned_to_name: Optional[str] = None
+    due_date: Optional[str] = None
+    days_overdue: Optional[int] = None
 
 
 class UnreadCountOut(BaseModel):

@@ -150,8 +150,26 @@ def list_tasks_service(
         query = _db().table("tasks").select("*, projects(name), users(name)")
 
         if current_user.role.value == RoleEnum.DEVELOPER.value:
-            # Developer: only their own tasks
-            query = query.eq("assigned_to", current_user.id)
+            if project_id:
+                # Validate the developer has access to this project
+                dev_access = (
+                    _db()
+                    .table("tasks")
+                    .select("id")
+                    .eq("project_id", project_id)
+                    .eq("assigned_to", current_user.id)
+                    .limit(1)
+                    .execute()
+                )
+                if not dev_access.data:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="You do not have permission to view tasks for this project.",
+                    )
+                query = query.eq("project_id", project_id)
+            else:
+                # Developer: only their own tasks across all projects
+                query = query.eq("assigned_to", current_user.id)
 
         elif current_user.role.value == RoleEnum.PROJECT_MANAGER.value:
             # PM: tasks in projects they manage

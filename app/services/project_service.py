@@ -609,19 +609,53 @@ def get_project_history_service(
 ) -> List[Dict]:
     """
     Fetch activity logs associated with a project.
-    Only PMs of this project or Admins can view.
+    Enforces RBAC: Must be Admin, Project Manager of this project, or assigned Developer.
     """
-    # 1. Authorize
+    # 1. Authorize: verifies Admin, PM, or assigned Developer permission
     get_project_by_id_service(project_id, current_user)
     
     try:
+        # Fetch tasks belonging to this project to ensure all task activities are captured
+        task_resp = _db().table("tasks").select("id").eq("project_id", project_id).execute()
+        task_ids = set([str(t["id"]) for t in (task_resp.data or []) if t.get("id")])
+
+        # Query logs associated directly by project_id or by project entity
         resp = _db().table("activity_logs").select(
             "id, user_id, action, entity_type, entity_id, project_id, description, metadata, created_at, "
             "users(id, name, email)"
         ).or_(f"project_id.eq.{project_id},and(entity_type.eq.project,entity_id.eq.{project_id})").order("created_at", desc=True).execute()
         
+        rows_by_id = {}
+        for row in (resp.data or []):
+            row_pid = str(row["project_id"]) if row.get("project_id") else None
+            # Strictly reject activity from another project
+            if row_pid and row_pid != str(project_id):
+                continue
+            rows_by_id[str(row["id"])] = row
+
+        # If there are tasks, also include any task activity logs
+        if task_ids:
+            task_ids_list = list(task_ids)
+            # Batch query task activities
+            task_logs_resp = _db().table("activity_logs").select(
+                "id, user_id, action, entity_type, entity_id, project_id, description, metadata, created_at, "
+                "users(id, name, email)"
+            ).eq("entity_type", "task").in_("entity_id", task_ids_list[:100]).order("created_at", desc=True).execute()
+            for row in (task_logs_resp.data or []):
+                row_pid = str(row["project_id"]) if row.get("project_id") else None
+                if row_pid and row_pid != str(project_id):
+                    continue
+                rows_by_id[str(row["id"])] = row
+
+        # Sort combined results by created_at desc
+        sorted_rows = sorted(
+            rows_by_id.values(),
+            key=lambda r: r.get("created_at") or "",
+            reverse=True,
+        )
+
         results = []
-        for row in resp.data:
+        for row in sorted_rows:
             user_data = row.get("users") or {}
             results.append({
                 "id": str(row["id"]),
@@ -629,7 +663,7 @@ def get_project_history_service(
                 "action": row["action"],
                 "entity_type": row["entity_type"],
                 "entity_id": str(row["entity_id"]) if row.get("entity_id") else None,
-                "project_id": str(row["project_id"]) if row.get("project_id") else None,
+                "project_id": str(row["project_id"]) if row.get("project_id") else str(project_id),
                 "description": row["description"],
                 "metadata": row.get("metadata"),
                 "created_at": row["created_at"],
@@ -640,6 +674,8 @@ def get_project_history_service(
                 } if user_data.get("id") else None
             })
         return results
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -376,6 +376,16 @@ def generate_safe_deterministic_recommendations(evidence: dict) -> List[PulseRec
         r_type = risk["risk_type"]
         penalty = 15 if severity.lower() == "critical" else 10
 
+        refs = [
+            SupportingReference(type="risk", id=r_id, label=f"{severity} Risk: {r_title}")
+        ]
+        t_id = risk.get("task_id")
+        if t_id:
+            known_tasks = evidence.get("overdue_tasks", []) + evidence.get("upcoming_deadlines", [])
+            matched_task = next((t for t in known_tasks if str(t.get("id")).lower() == str(t_id).lower()), None)
+            task_label = f"Task: {matched_task['title']}" if matched_task else f"Task: {t_id}"
+            refs.append(SupportingReference(type="task", id=str(t_id), label=task_label))
+
         recs.append(PulseRecommendation(
             id=f"det-rec-{rec_counter}",
             category="RISK_MITIGATION",
@@ -385,9 +395,7 @@ def generate_safe_deterministic_recommendations(evidence: dict) -> List[PulseRec
             missing_info_or_assumptions="Technical mitigation plan and estimated resolution timestamp require confirmation from team lead.",
             confidence="High",
             confidence_rationale="Derived directly from verified open workflow risk and deterministic health score penalty formula.",
-            supporting_references=[
-                SupportingReference(type="risk", id=r_id, label=f"{severity} Risk: {r_title}")
-            ],
+            supporting_references=refs,
             actionable_entity_id=r_id,
             actionable_entity_type="risk",
         ))
@@ -523,6 +531,9 @@ def validate_and_sanitize_recommendations(
     all_tasks = evidence.get("upcoming_deadlines", []) + evidence.get("overdue_tasks", [])
     for t in all_tasks:
         valid_task_ids[str(t["id"]).lower()] = t
+    for r in evidence.get("critical_or_high_risks", []):
+        if r.get("task_id"):
+            valid_task_ids[str(r["task_id"]).lower()] = {"id": str(r["task_id"]), "title": "Linked Task"}
 
     valid_risk_ids = {
         str(r["id"]).lower(): r for r in evidence.get("critical_or_high_risks", [])

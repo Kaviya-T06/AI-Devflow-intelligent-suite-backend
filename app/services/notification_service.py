@@ -39,6 +39,8 @@ def _save_fallback_store(store: Dict[str, Dict[str, Any]]) -> None:
 
 # Persistent fallback store for when public.notifications table is not yet migrated in Supabase
 _fallback_notifications: Dict[str, Dict[str, Any]] = _load_fallback_store()
+_project_name_cache: Dict[str, str] = {}
+_user_name_cache: Dict[str, str] = {}
 
 
 def _is_table_missing_error(exc: Exception) -> bool:
@@ -106,8 +108,12 @@ class NotificationService:
             )
             if task_id:
                 query = query.eq("task_id", task_id)
+            else:
+                query = query.is_("task_id", "null")
             if project_id:
                 query = query.eq("project_id", project_id)
+            else:
+                query = query.is_("project_id", "null")
 
             resp = query.execute()
             if resp.data:
@@ -119,13 +125,15 @@ class NotificationService:
         except Exception as exc:
             if _is_table_missing_error(exc):
                 # Deduplication check against fallback memory store
+                target_task = str(task_id) if task_id else None
+                target_proj = str(project_id) if project_id else None
                 recent = [
                     v for v in _fallback_notifications.values()
                     if v["recipient_id"] == recipient_id
                     and v["type"] == type_str
                     and v["title"] == title
-                    and (not task_id or v.get("task_id") == task_id)
-                    and (not project_id or v.get("project_id") == project_id)
+                    and (str(v.get("task_id")) if v.get("task_id") else None) == target_task
+                    and (str(v.get("project_id")) if v.get("project_id") else None) == target_proj
                 ]
                 if recent:
                     recent.sort(key=lambda x: x["created_at"], reverse=True)
@@ -133,18 +141,7 @@ class NotificationService:
                     created_dt = datetime.fromisoformat(latest["created_at"].replace("Z", "+00:00"))
                     now_dt = datetime.now(timezone.utc)
                     if (now_dt - created_dt).total_seconds() < 60:
-                        return NotificationOut(
-                            id=latest["id"],
-                            recipient_id=latest["recipient_id"],
-                            type=NotificationType(latest["type"]),
-                            title=latest["title"],
-                            message=latest["message"],
-                            project_id=latest.get("project_id"),
-                            task_id=latest.get("task_id"),
-                            is_read=latest.get("is_read", False),
-                            read_at=latest.get("read_at"),
-                            created_at=latest["created_at"],
-                        )
+                        return NotificationService._get_by_id(latest["id"], recipient_id)
 
         new_id = str(uuid4())
         type_str = type.value if isinstance(type, NotificationType) else type
@@ -224,7 +221,7 @@ class NotificationService:
             )
             if resp.data:
                 row = resp.data[0]
-                return NotificationOut(
+                item = NotificationOut(
                     id=str(row["id"]),
                     recipient_id=str(row["recipient_id"]),
                     type=NotificationType(row["type"]),
@@ -236,11 +233,12 @@ class NotificationService:
                     read_at=str(row["read_at"]) if row.get("read_at") else None,
                     created_at=str(row["created_at"]),
                 )
+                return NotificationService._enrich_notifications([item])[0]
         except Exception as exc:
             if _is_table_missing_error(exc) and notification_id in _fallback_notifications:
                 row = _fallback_notifications[notification_id]
                 if row["recipient_id"] == recipient_id:
-                    return NotificationOut(
+                    item = NotificationOut(
                         id=row["id"],
                         recipient_id=row["recipient_id"],
                         type=NotificationType(row["type"]),
@@ -252,10 +250,113 @@ class NotificationService:
                         read_at=row.get("read_at"),
                         created_at=row["created_at"],
                     )
+                    return NotificationService._enrich_notifications([item])[0]
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Notification not found or access denied.",
         )
+
+    @staticmethod
+    def _enrich_notifications(items: List[NotificationOut]) -> List[NotificationOut]:
+        """
+        Enrich overdue notifications with real project name and task relationship data from database.
+        Ensures consistent title: 'Overdue Task — {project_name}' or 'Overdue Task — Project name unavailable'.
+        """
+        if not items:
+            return items
+
+        overdue_items = [
+            item for item in items
+            if (item.type == NotificationType.TASK_OVERDUE or str(item.type) == "TASK_OVERDUE")
+        ]
+        if not overdue_items:
+            return items
+
+        db = get_supabase_client()
+        today_d = date.today()
+
+        # Step 1: Collect task IDs and query tasks table
+        task_ids = list({str(it.task_id) for it in overdue_items if it.task_id})
+        tasks_map = {}
+        if task_ids:
+            try:
+                t_resp = db.table("tasks").select("id, title, project_id, assigned_to, due_date").in_("id", task_ids).execute()
+                for t in (t_resp.data or []):
+                    tasks_map[str(t["id"])] = t
+            except Exception as t_err:
+                print(f"Warning: Failed to fetch tasks for overdue enrichment: {t_err}")
+
+        # Step 2: Collect project IDs from notification items + fetched tasks
+        proj_ids = set()
+        for it in overdue_items:
+            if it.project_id:
+                proj_ids.add(str(it.project_id))
+            elif it.task_id and str(it.task_id) in tasks_map:
+                t_proj = tasks_map[str(it.task_id)].get("project_id")
+                if t_proj:
+                    proj_ids.add(str(t_proj))
+
+        # Check in-memory cache first for projects
+        missing_proj_ids = [pid for pid in proj_ids if pid not in _project_name_cache]
+        if missing_proj_ids:
+            try:
+                p_resp = db.table("projects").select("id, name").in_("id", missing_proj_ids).execute()
+                for p in (p_resp.data or []):
+                    _project_name_cache[str(p["id"])] = p.get("name")
+            except Exception as p_err:
+                print(f"Warning: Failed to fetch projects for overdue enrichment: {p_err}")
+
+        # Step 3: Collect assigned developer IDs from tasks
+        dev_ids = set()
+        for t in tasks_map.values():
+            if t.get("assigned_to"):
+                dev_ids.add(str(t["assigned_to"]))
+
+        # Check in-memory cache first for users
+        missing_dev_ids = [uid for uid in dev_ids if uid not in _user_name_cache]
+        if missing_dev_ids:
+            try:
+                u_resp = db.table("users").select("id, name").in_("id", missing_dev_ids).execute()
+                for u in (u_resp.data or []):
+                    _user_name_cache[str(u["id"])] = u.get("name")
+            except Exception as u_err:
+                print(f"Warning: Failed to fetch users for overdue enrichment: {u_err}")
+
+        # Step 4: Populate each overdue item
+        for item in overdue_items:
+            task_info = tasks_map.get(str(item.task_id)) if item.task_id else None
+            if task_info:
+                if not item.task_title:
+                    item.task_title = task_info.get("title")
+                if not item.project_id and task_info.get("project_id"):
+                    item.project_id = str(task_info["project_id"])
+                if not item.due_date and task_info.get("due_date"):
+                    item.due_date = str(task_info["due_date"])
+                if not item.assigned_to_name and task_info.get("assigned_to"):
+                    item.assigned_to_name = _user_name_cache.get(str(task_info["assigned_to"]))
+
+            # Calculate days overdue from due date
+            if item.due_date:
+                try:
+                    due_d = datetime.fromisoformat(str(item.due_date)[:10]).date()
+                    item.days_overdue = max(0, (today_d - due_d).days)
+                except Exception:
+                    pass
+
+            # Resolve project name through database relationship
+            project_name = None
+            if item.project_id and str(item.project_id) in _project_name_cache:
+                project_name = _project_name_cache[str(item.project_id)]
+
+            item.project_name = project_name
+
+            # Consistent title: "Overdue Task — {project_name}" or "Overdue Task — Project name unavailable"
+            if project_name:
+                item.title = f"Overdue Task — {project_name}"
+            else:
+                item.title = "Overdue Task — Project name unavailable"
+
+        return items
 
     @staticmethod
     def list_user_notifications(
@@ -307,6 +408,7 @@ class NotificationService:
                 )
                 for r in rows
             ]
+            items = NotificationService._enrich_notifications(items)
 
             # Unread count (always reflects true unread count for user)
             unread_resp = (
@@ -369,6 +471,7 @@ class NotificationService:
                     )
                     for r in paginated
                 ]
+                items = NotificationService._enrich_notifications(items)
                 return items, unread_count, len(filtered_items)
             raise exc
 
@@ -532,9 +635,12 @@ class NotificationService:
         """
         Check for tasks with due_date < today that are not COMPLETED.
         Generate TASK_OVERDUE notifications for assignees and project managers.
+        Retrieves project name and assigned developer through database relationships.
+        Consistent title: 'Overdue Task — {project_name}' or 'Overdue Task — Project name unavailable'.
         """
         db = get_supabase_client()
-        today_str = date.today().isoformat()
+        today_d = date.today()
+        today_str = today_d.isoformat()
         created_count = 0
 
         try:
@@ -548,32 +654,70 @@ class NotificationService:
             )
             overdue_tasks = tasks_resp.data or []
 
+            # Pre-fetch projects for all overdue tasks
+            proj_ids = list({str(t["project_id"]) for t in overdue_tasks if t.get("project_id")})
+            projects_map = {}
+            if proj_ids:
+                try:
+                    p_resp = db.table("projects").select("id, name, project_manager_id").in_("id", proj_ids).execute()
+                    for p in (p_resp.data or []):
+                        projects_map[str(p["id"])] = p
+                except Exception as p_err:
+                    print(f"Warning: Failed to fetch projects: {p_err}")
+
+            # Pre-fetch developer user names
+            assigned_ids = list({str(t["assigned_to"]) for t in overdue_tasks if t.get("assigned_to")})
+            users_map = {}
+            if assigned_ids:
+                try:
+                    u_resp = db.table("users").select("id, name").in_("id", assigned_ids).execute()
+                    for u in (u_resp.data or []):
+                        users_map[str(u["id"])] = u.get("name")
+                except Exception as u_err:
+                    print(f"Warning: Failed to fetch users: {u_err}")
+
             for task in overdue_tasks:
                 task_id = str(task["id"])
-                task_title = task.get("title", "Untitled Task")
+                task_title = task.get("title") or "Untitled Task"
                 assigned_to = str(task["assigned_to"]) if task.get("assigned_to") else None
                 project_id = str(task["project_id"]) if task.get("project_id") else None
-                due_date_str = str(task.get("due_date"))
+                due_date_str = str(task.get("due_date")) if task.get("due_date") else None
 
-                # Fetch project manager if project exists
-                pm_id = None
-                if project_id:
-                    proj_resp = (
-                        db.table("projects")
-                        .select("project_manager_id")
-                        .eq("id", project_id)
-                        .execute()
-                    )
-                    if proj_resp.data and proj_resp.data[0].get("project_manager_id"):
-                        pm_id = str(proj_resp.data[0]["project_manager_id"])
+                # Calculate days overdue from actual due date and current date
+                days_overdue = 0
+                if due_date_str:
+                    try:
+                        due_d = datetime.fromisoformat(due_date_str[:10]).date()
+                        days_overdue = max(0, (today_d - due_d).days)
+                    except Exception:
+                        pass
+                days_overdue_str = f"{days_overdue} day{'s' if days_overdue != 1 else ''} overdue"
+
+                # Look up project info
+                proj_info = projects_map.get(project_id) if project_id else None
+                project_name = proj_info.get("name") if proj_info else None
+                pm_id = str(proj_info["project_manager_id"]) if proj_info and proj_info.get("project_manager_id") else None
+
+                dev_name = users_map.get(assigned_to) if assigned_to else None
+
+                # Consistent title: "Overdue Task — {project_name}" or "Overdue Task — Project name unavailable"
+                if project_name:
+                    notif_title = f"Overdue Task — {project_name}"
+                else:
+                    notif_title = "Overdue Task — Project name unavailable"
+
+                # Construct clear message containing task title, developer, due date and days overdue
+                dev_text = f"Assigned to {dev_name}. " if dev_name else ""
+                due_text = f"Due on {due_date_str} ({days_overdue_str})." if due_date_str else f"({days_overdue_str})."
+                notif_msg = f"Task: '{task_title}'. {dev_text}{due_text}"
 
                 # Notify assigned developer
                 if assigned_to:
                     NotificationService.create_notification(
                         recipient_id=assigned_to,
                         type=NotificationType.TASK_OVERDUE,
-                        title="Task Overdue Alert",
-                        message=f"Task '{task_title}' was due on {due_date_str} and is currently overdue.",
+                        title=notif_title,
+                        message=notif_msg,
                         project_id=project_id,
                         task_id=task_id,
                     )
@@ -584,8 +728,8 @@ class NotificationService:
                     NotificationService.create_notification(
                         recipient_id=pm_id,
                         type=NotificationType.TASK_OVERDUE,
-                        title="Overdue Task in Project",
-                        message=f"Task '{task_title}' assigned to developer was due on {due_date_str} and is overdue.",
+                        title=notif_title,
+                        message=notif_msg,
                         project_id=project_id,
                         task_id=task_id,
                     )

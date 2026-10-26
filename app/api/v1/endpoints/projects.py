@@ -22,6 +22,8 @@ from app.services.project_service import (
     update_project_service,
 )
 from app.schemas.common import ActivityOut
+from app.schemas.task import TaskOut
+from app.services.task_service import list_tasks_service
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -70,12 +72,24 @@ async def get_project_history(
 ) -> List[ActivityOut]:
     """
     Retrieve activity log history for a specific project.
-    Enforces RBAC: Must be Admin or Project Manager of this project.
+    Enforces RBAC: Must be Admin, Project Manager of this project, or assigned Developer.
     """
     return get_project_history_service(
         project_id=project_id,
         current_user=current_user,
     )
+
+
+@router.get("/{project_id}/tasks", response_model=List[TaskOut], summary="Get project tasks")
+async def get_project_tasks(
+    project_id: str = Path(..., description="Project UUID"),
+    current_user: UserOut = Depends(get_current_user),
+) -> List[TaskOut]:
+    """
+    Retrieve tasks for a specific project.
+    Enforces RBAC: Must be Admin, Project Manager of this project, or assigned Developer.
+    """
+    return list_tasks_service(current_user=current_user, project_id=project_id)
 
 
 @router.post(

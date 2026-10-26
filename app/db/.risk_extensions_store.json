@@ -494,5 +494,25 @@
         "timestamp": "2026-10-24T16:07:05.152297+00:00"
       }
     ]
+  },
+  "2ba7ffc6-1754-4bc2-9b3c-0f1885f4fe6f": {
+    "detection_rule": "end_date < current_timestamp AND progress < 100",
+    "detection_reason": "Project passed schedule target of 2026-10-25 with progress at 50%.",
+    "severity_reason": "Project deadline breached at 50% progress",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "46b15ac8-8ed4-4f6b-b0c0-5f5e2fcc38cf",
+        "timestamp": "2026-10-25T10:40:02.469259+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Project passed schedule target of 2026-10-25 with progress at 50%."
+      }
+    ]
   }
 }

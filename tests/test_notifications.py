@@ -193,3 +193,52 @@ def test_unauthenticated_access_denial():
 
     res = client.patch("/api/v1/notifications/read-all")
     assert res.status_code == 401
+
+
+def test_overdue_task_notification_enrichment_and_project_relationship():
+    """
+    Verify:
+    1. Overdue task notifications show actual project name in title: 'Overdue Task — {project_name}'.
+    2. Overdue task notifications display 'Overdue Task — Project name unavailable' when project name is unavailable.
+    3. Overdue task notifications enrich task title, developer name, due date, and days overdue.
+    """
+    user_id = str(uuid.uuid4())
+    proj_id = "9706106d-c1e5-4e6d-afeb-b5da43abfd9e"  # AI Customer Support Platform
+    task_id = "6297f50a-6114-4cea-bf39-89eb70021229"
+
+    # Notification with project_id and task_id
+    n = NotificationService.create_notification(
+        recipient_id=user_id,
+        type=NotificationType.TASK_OVERDUE,
+        title="Overdue Task in Project",
+        message="Task 'Create database schema and integration' was due on 2026-09-29 and is currently overdue.",
+        project_id=proj_id,
+        task_id=task_id,
+    )
+
+    # When retrieved via list_user_notifications, it should be enriched
+    items, _, _ = NotificationService.list_user_notifications(user_id)
+    assert len(items) >= 1
+    overdue_notif = next((i for i in items if i.id == n.id), None)
+    assert overdue_notif is not None
+    assert overdue_notif.title == "Overdue Task — AI Customer Support Platform"
+    assert overdue_notif.project_name == "AI Customer Support Platform"
+    assert overdue_notif.task_title == "Create database schema and integration"
+    assert overdue_notif.days_overdue is not None
+    assert overdue_notif.days_overdue > 0
+
+    # Notification without project or with unavailable project
+    n_unavail = NotificationService.create_notification(
+        recipient_id=user_id,
+        type=NotificationType.TASK_OVERDUE,
+        title="Overdue Task in Project",
+        message="Generic overdue task message.",
+        project_id=None,
+        task_id=None,
+    )
+
+    items, _, _ = NotificationService.list_user_notifications(user_id)
+    unavail_notif = next((i for i in items if i.id == n_unavail.id), None)
+    assert unavail_notif is not None
+    assert unavail_notif.title == "Overdue Task — Project name unavailable"
+    assert unavail_notif.project_name is None
