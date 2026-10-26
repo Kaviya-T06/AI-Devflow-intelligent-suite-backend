@@ -47,7 +47,7 @@ def count_working_days(start_date: Union[date, str], end_date: Union[date, str])
 def calculate_working_weeks(start_date: Union[date, str], end_date: Union[date, str]) -> float:
     """
     Calculate working weeks between start_date and end_date.
-    Returns calendar days / 7.0 for smooth scaling.
+    Uses 5 business working days per week.
     """
     if isinstance(start_date, str):
         start_date = date.fromisoformat(start_date)
@@ -55,8 +55,8 @@ def calculate_working_weeks(start_date: Union[date, str], end_date: Union[date, 
         end_date = date.fromisoformat(end_date)
     if end_date <= start_date:
         return 0.0
-    days = (end_date - start_date).days
-    return days / 7.0
+    w_days = count_working_days(start_date, end_date)
+    return w_days / 5.0
 
 def _get_project_tasks_and_capacities(project_id: str):
     """
@@ -169,6 +169,14 @@ def _get_project_tasks_and_capacities(project_id: str):
         has_unknown_capacity
     )
 
+def _format_hours_str(val: Optional[float]) -> str:
+    if val is None:
+        return "unknown"
+    if isinstance(val, (int, float)):
+        f_val = float(val)
+        return f"{int(f_val)}" if f_val.is_integer() else f"{f_val:.1f}"
+    return str(val)
+
 def _synthesize_simulation_narrative(scenario_type: str, baseline_data: dict, scenario_data: dict) -> str:
     """Fast, deterministic narrative based on verified simulation metrics."""
     b_days = baseline_data.get("working_days", 0)
@@ -190,39 +198,56 @@ def _synthesize_simulation_narrative(scenario_type: str, baseline_data: dict, sc
             sentences.append(f"The proposed deadline maintains {s_days} available working days.")
     else:
         removed = scenario_data.get("capacity_removed_hours", 0)
-        sentences.append(f"Simulating this developer unavailability temporarily removes approximately {removed} hours of developer capacity.")
+        sentences.append(f"Simulating this developer unavailability temporarily removes approximately {_format_hours_str(removed)} hours of developer capacity.")
 
     if gap is not None:
         if gap < 0:
             shortfall = abs(gap)
-            sentences.append(f"This results in a projected capacity shortfall of {shortfall:.1f} hours, where available team capacity ({s_cap} hrs) is insufficient for estimated effort ({rem_effort or 'unknown'} hrs).")
+            sentences.append(f"This results in a projected capacity shortfall of {_format_hours_str(shortfall)} hours, where available team capacity ({_format_hours_str(s_cap)} hrs) is insufficient for estimated effort ({_format_hours_str(rem_effort)} hrs).")
             sentences.append("Recommended recovery options include reallocating priority tasks, adjusting sprint scope, or adding developer capacity.")
         elif gap == 0:
-            sentences.append(f"Available team capacity ({s_cap} hrs) exactly matches the remaining estimated effort.")
+            sentences.append(f"Available team capacity ({_format_hours_str(s_cap)} hrs) exactly matches the remaining estimated effort.")
         else:
-            sentences.append(f"Available team capacity ({s_cap} hrs) provides a positive capacity buffer of {gap:.1f} hours over the verified remaining effort ({rem_effort} hrs), subject to scheduling constraints.")
+            sentences.append(f"Available team capacity ({_format_hours_str(s_cap)} hrs) provides a positive capacity buffer of {_format_hours_str(gap)} hours over the verified remaining effort ({_format_hours_str(rem_effort)} hrs), subject to scheduling constraints.")
     elif gap_status == "unavailable":
         sentences.append("Some remaining tasks lack effort estimates. Add estimates to evaluate deadline feasibility accurately.")
         sentences.append("Recommendation: Update remaining task estimates and developer weekly capacities to enable full gap analysis.")
     else:
-        sentences.append(f"Available team capacity ({s_cap} hrs) is sufficient to cover the verified remaining effort under current assumptions.")
+        sentences.append(f"Available team capacity ({_format_hours_str(s_cap)} hrs) is sufficient to cover the verified remaining effort under current assumptions.")
 
     return " ".join(sentences)
 
 
 async def _generate_ai_explanation(scenario_type: str, baseline_data: dict, scenario_data: dict) -> str:
-    """Generate AI explanation for the simulation with fast timeout and instant fallback."""
+    """Generate AI explanation for the simulation strictly grounded on verified backend metrics."""
     try:
+        import asyncio
         from app.services.ai_service import ask_llm
         
         prompt = f"""
 You are an expert Project Management AI assistant.
-In 2-3 concise sentences, summarize the impact of this {scenario_type} simulation:
+Summarize the impact of this {scenario_type} simulation in 2-3 concise sentences based STRICTLY on the verified metrics below:
 Baseline: {json.dumps(baseline_data, default=str)}
 Scenario: {json.dumps(scenario_data, default=str)}
-State the working days, capacity gap, and 1 actionable recovery option.
+
+Strict Constraints:
+1. Ground your explanation strictly on the verified numbers in the scenario: working days ({scenario_data.get('working_days')}), available capacity ({scenario_data.get('available_capacity_hours')} hrs), remaining effort ({scenario_data.get('remaining_estimated_effort_hours')} hrs), and capacity gap ({scenario_data.get('capacity_gap_hours')} hrs).
+2. Never contradict the verified capacity gap or feasibility status. If capacity gap is negative, describe it as a shortfall of {abs(scenario_data.get('capacity_gap_hours') or 0)} hrs. If positive, describe it as a buffer of {scenario_data.get('capacity_gap_hours')} hrs.
+3. If capacity gap is unavailable/null, state that effort estimates or developer capacities are missing.
+4. State 1 practical, actionable recovery option.
 """
-        return await asyncio.wait_for(ask_llm(prompt), timeout=3.5)
+        response = await asyncio.wait_for(ask_llm(prompt), timeout=3.5)
+        
+        # Verify the AI response does not contradict the verified metrics
+        gap = scenario_data.get("capacity_gap_hours")
+        if gap is not None:
+            lower_res = response.lower()
+            if gap < 0 and ("sufficient capacity" in lower_res or "positive buffer" in lower_res):
+                return _synthesize_simulation_narrative(scenario_type, baseline_data, scenario_data)
+            if gap > 0 and ("shortfall" in lower_res or "insufficient" in lower_res):
+                return _synthesize_simulation_narrative(scenario_type, baseline_data, scenario_data)
+                
+        return response
     except Exception:
         return _synthesize_simulation_narrative(scenario_type, baseline_data, scenario_data)
 
@@ -248,22 +273,23 @@ async def simulate_deadline_change(
 
     # Working days & weeks calculation
     baseline_days = count_working_days(today, project.end_date) if project.end_date else 0
-    baseline_weeks = calculate_working_weeks(today, project.end_date) if project.end_date else 0.0
+    baseline_weeks = round(baseline_days / 5.0, 2) if baseline_days > 0 else 0.0
 
     scenario_days = count_working_days(today, payload.proposed_deadline)
-    scenario_weeks = calculate_working_weeks(today, payload.proposed_deadline)
+    scenario_weeks = round(scenario_days / 5.0, 2) if scenario_days > 0 else 0.0
 
+    # Capacity calculation: Consistent working-hours rule: daily developer capacity = capacity_hours_per_week / 5.0
     baseline_capacity = 0.0
     if project.end_date and project.end_date > today:
         for dev in developer_capacities.values():
             if dev["capacity"] is not None:
-                baseline_capacity += dev["capacity"] * baseline_weeks
+                baseline_capacity += (float(dev["capacity"]) / 5.0) * baseline_days
 
     scenario_capacity = 0.0
     if payload.proposed_deadline > today:
         for dev in developer_capacities.values():
             if dev["capacity"] is not None:
-                scenario_capacity += dev["capacity"] * scenario_weeks
+                scenario_capacity += (float(dev["capacity"]) / 5.0) * scenario_days
 
     schedule_concerns: List[str] = []
     missing_data_items: List[str] = []
@@ -305,19 +331,32 @@ async def simulate_deadline_change(
         schedule_concerns.append("Proposed deadline reduces available capacity for currently assigned developers.")
         if project.end_date and payload.proposed_deadline < project.end_date:
             days_diff = baseline_days - scenario_days
-            cap_diff = max(0.0, baseline_capacity - scenario_capacity)
+            cal_diff = (project.end_date - payload.proposed_deadline).days
+            cap_diff = round(baseline_capacity - scenario_capacity, 1)
             schedule_concerns.append(
-                f"Proposed deadline ({payload.proposed_deadline}) compresses schedule by {days_diff} working day(s) "
-                f"compared to current deadline ({project.end_date}), reducing available capacity by {math.ceil(cap_diff)} hours."
+                f"Proposed deadline ({payload.proposed_deadline}) compresses schedule by {cal_diff} calendar day(s) "
+                f"({days_diff} working day(s)) compared to current deadline ({project.end_date}), reducing available capacity by {_format_hours_str(cap_diff)} hours."
             )
     elif project.end_date and payload.proposed_deadline > project.end_date:
         days_gained = scenario_days - baseline_days
-        cap_gained = max(0.0, scenario_capacity - baseline_capacity)
+        cal_gained = (payload.proposed_deadline - project.end_date).days
+        cap_gained = round(scenario_capacity - baseline_capacity, 1)
         schedule_concerns.append(
-            f"Proposed deadline extends schedule by {days_gained} working day(s), adding {math.ceil(cap_gained)} hours of capacity."
+            f"Proposed deadline extends schedule by {cal_gained} calendar day(s) ({days_gained} working day(s)), adding {_format_hours_str(cap_gained)} hours of capacity."
         )
 
     # Capacity Gap calculation: Capacity Gap = Available Capacity - Estimated Effort Required
+    baseline_capacity_gap = None
+    baseline_capacity_gap_status = "calculated"
+    if tasks_missing_estimates > 0:
+        baseline_capacity_gap = None
+        baseline_capacity_gap_status = "unavailable"
+    elif len(developer_capacities) > 0 and developers_with_capacity == 0:
+        baseline_capacity_gap = None
+        baseline_capacity_gap_status = "unavailable"
+    else:
+        baseline_capacity_gap = round(baseline_capacity - total_effort, 1)
+
     capacity_gap = None
     capacity_gap_status = "calculated"
 
@@ -332,9 +371,8 @@ async def simulate_deadline_change(
         capacity_gap_status = "unavailable"
         schedule_concerns.append("Capacity gap cannot be calculated: assigned developers lack weekly capacity data.")
     else:
-        # All required estimates and capacities exist
         # Capacity Gap = Available Capacity - Estimated Effort Required
-        capacity_gap = scenario_capacity - total_effort
+        capacity_gap = round(scenario_capacity - total_effort, 1)
         capacity_gap_status = "calculated"
 
         if capacity_gap > 0:
@@ -359,9 +397,11 @@ async def simulate_deadline_change(
         current_deadline=project.end_date,
         remaining_tasks=len(pending_tasks),
         remaining_estimated_effort_hours=round(total_effort, 1) if tasks_with_estimates > 0 else None,
-        available_capacity_hours=math.floor(baseline_capacity),
+        available_capacity_hours=round(baseline_capacity, 1),
+        capacity_gap_hours=baseline_capacity_gap,
+        capacity_gap_status=baseline_capacity_gap_status,
         working_days=baseline_days,
-        working_weeks=round(baseline_weeks, 2),
+        working_weeks=baseline_weeks,
         tasks_with_estimates=tasks_with_estimates,
         tasks_missing_estimates=tasks_missing_estimates,
         developers_with_capacity=developers_with_capacity,
@@ -372,11 +412,11 @@ async def simulate_deadline_change(
         proposed_deadline=payload.proposed_deadline,
         remaining_tasks=len(pending_tasks),
         remaining_estimated_effort_hours=round(total_effort, 1) if tasks_with_estimates > 0 else None,
-        available_capacity_hours=math.floor(scenario_capacity),
-        capacity_gap_hours=math.ceil(capacity_gap) if capacity_gap is not None else None,
+        available_capacity_hours=round(scenario_capacity, 1),
+        capacity_gap_hours=capacity_gap,
         capacity_gap_status=capacity_gap_status,
         working_days=scenario_days,
-        working_weeks=round(scenario_weeks, 2),
+        working_weeks=scenario_weeks,
         tasks_with_estimates=tasks_with_estimates,
         tasks_missing_estimates=tasks_missing_estimates,
         developers_with_capacity=developers_with_capacity,
@@ -431,13 +471,13 @@ async def simulate_developer_unavailability(
     
     today = date.today()
     baseline_days = count_working_days(today, project.end_date) if project.end_date else 0
-    baseline_weeks = calculate_working_weeks(today, project.end_date) if project.end_date else 0.0
+    baseline_weeks = round(baseline_days / 5.0, 2) if baseline_days > 0 else 0.0
 
     baseline_capacity = 0.0
     if project.end_date and project.end_date > today:
         for dev in developer_capacities.values():
             if dev["capacity"] is not None:
-                baseline_capacity += dev["capacity"] * baseline_weeks
+                baseline_capacity += (float(dev["capacity"]) / 5.0) * baseline_days
             
     # Calculate unavailability period
     absence_start = max(payload.start_date, today)
@@ -448,8 +488,7 @@ async def simulate_developer_unavailability(
     capacity_removed = 0.0
     absence_days = count_working_days(absence_start, absence_end)
     if absence_end > absence_start and dev_capacity_per_week > 0:
-        absence_weeks = calculate_working_weeks(absence_start, absence_end)
-        capacity_removed = absence_weeks * dev_capacity_per_week
+        capacity_removed = (float(dev_capacity_per_week) / 5.0) * absence_days
         
     scenario_capacity = max(0.0, baseline_capacity - capacity_removed)
     affected_tasks = [t for t in pending_tasks if str(t.get("assigned_to")) == payload.developer_id]
@@ -470,8 +509,16 @@ async def simulate_developer_unavailability(
         assumptions_and_limitations.append(f"{developers_missing_capacity} developer(s) lack weekly capacity data.")
         
     if capacity_removed > 0:
-        schedule_concerns.append(f"Developer absence removes {math.ceil(capacity_removed)} hours of capacity over {absence_days} working day(s).")
+        schedule_concerns.append(f"Developer absence removes {_format_hours_str(round(capacity_removed, 1))} hours of capacity over {absence_days} working day(s).")
         
+    baseline_capacity_gap = None
+    baseline_capacity_gap_status = "calculated"
+    if tasks_missing_estimates > 0 or (len(developer_capacities) > 0 and developers_with_capacity == 0):
+        baseline_capacity_gap = None
+        baseline_capacity_gap_status = "unavailable"
+    else:
+        baseline_capacity_gap = round(baseline_capacity - total_effort, 1)
+
     capacity_gap = None
     capacity_gap_status = "calculated"
 
@@ -487,18 +534,18 @@ async def simulate_developer_unavailability(
         schedule_concerns.append("Capacity gap cannot be calculated: assigned developers lack capacity data.")
     else:
         # Capacity Gap = Available Capacity - Estimated Effort Required
-        capacity_gap = scenario_capacity - total_effort
+        capacity_gap = round(scenario_capacity - total_effort, 1)
         capacity_gap_status = "calculated"
         if capacity_gap > 0:
             schedule_concerns.append(
-                f"Available capacity ({scenario_capacity:.1f} hrs) exceeds estimated effort ({total_effort:.1f} hrs) by {capacity_gap:.1f} hrs, subject to scheduling constraints."
+                f"Available capacity ({_format_hours_str(scenario_capacity)} hrs) exceeds estimated effort ({_format_hours_str(total_effort)} hrs) by {_format_hours_str(capacity_gap)} hrs, subject to scheduling constraints."
             )
         elif capacity_gap == 0:
             schedule_concerns.append("Available capacity exactly matches the estimated effort under stated assumptions.")
         else:
             shortfall = abs(capacity_gap)
             schedule_concerns.append(
-                f"Projected capacity shortfall of {shortfall:.1f} hours detected: estimated effort ({total_effort:.1f} hrs) exceeds available capacity ({scenario_capacity:.1f} hrs)."
+                f"Projected capacity shortfall of {_format_hours_str(shortfall)} hours detected: estimated effort ({_format_hours_str(total_effort)} hrs) exceeds available capacity ({_format_hours_str(scenario_capacity)} hrs)."
             )
 
     if not schedule_concerns:
@@ -508,9 +555,11 @@ async def simulate_developer_unavailability(
         current_deadline=project.end_date,
         remaining_tasks=len(pending_tasks),
         remaining_estimated_effort_hours=round(total_effort, 1) if tasks_with_estimates > 0 else None,
-        available_capacity_hours=math.floor(baseline_capacity),
+        available_capacity_hours=round(baseline_capacity, 1),
+        capacity_gap_hours=baseline_capacity_gap,
+        capacity_gap_status=baseline_capacity_gap_status,
         working_days=baseline_days,
-        working_weeks=round(baseline_weeks, 2),
+        working_weeks=baseline_weeks,
         tasks_with_estimates=tasks_with_estimates,
         tasks_missing_estimates=tasks_missing_estimates,
         developers_with_capacity=developers_with_capacity,
@@ -542,14 +591,14 @@ async def simulate_developer_unavailability(
         developer_id=payload.developer_id,
         start_date=payload.start_date,
         end_date=payload.end_date,
-        capacity_removed_hours=math.ceil(capacity_removed),
+        capacity_removed_hours=round(capacity_removed, 1),
         remaining_tasks=len(pending_tasks),
         remaining_estimated_effort_hours=round(total_effort, 1) if tasks_with_estimates > 0 else None,
-        available_capacity_hours=math.floor(scenario_capacity),
-        capacity_gap_hours=math.ceil(capacity_gap) if capacity_gap is not None else None,
+        available_capacity_hours=round(scenario_capacity, 1),
+        capacity_gap_hours=capacity_gap,
         capacity_gap_status=capacity_gap_status,
         working_days=baseline_days,
-        working_weeks=round(baseline_weeks, 2),
+        working_weeks=baseline_weeks,
         tasks_with_estimates=tasks_with_estimates,
         tasks_missing_estimates=tasks_missing_estimates,
         developers_with_capacity=developers_with_capacity,

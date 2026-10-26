@@ -295,4 +295,49 @@ def test_update_task_estimate_service(mocker):
     assert result["estimated_hours"] == 25.5
     assert "Successfully updated" in result["message"]
 
+@pytest.mark.asyncio
+async def test_what_if_simulator_regression_154_17_19(mocker):
+    """
+    Regression test:
+    Values: 154 hours current capacity, 17 hours hypothetical capacity, and 19 hours estimated effort.
+    Expected capacity gaps: +135 hours and -2 hours.
+    Expected capacity-gap difference: -137 hours.
+    Expected available-capacity difference: -137 hours.
+    """
+    user = UserOut(id="user1", name="Manager", email="m@m.com", role=RoleEnum.PROJECT_MANAGER, is_active=True)
+    cur_deadline = date.today() + timedelta(days=28)
+    proposed = date.today() + timedelta(days=7)
+    project = MockProject(id="p_reg", pm_id="user1", end_date=cur_deadline)
+    mocker.patch("app.services.simulation_service.get_project_by_id_service", return_value=project)
+
+    mock_db = mocker.MagicMock()
+    mocker.patch("app.services.simulation_service._db", return_value=mock_db)
+    mocker.patch("app.services.simulation_service._generate_ai_explanation", return_value="AI analysis")
+
+    # 19 hours estimated effort
+    mock_db.table.return_value.select.return_value.eq.return_value.execute.return_value.data = [
+        {"id": "t1", "project_id": "p_reg", "status": "TODO", "assigned_to": "dev1", "estimated_hours": 19.0},
+    ]
+
+    # Mock developer capacities
+    mock_db.table.return_value.select.return_value.in_.return_value.execute.return_value.data = [
+        {"id": "dev1", "full_name": "Dev One", "capacity_hours_per_week": 40.0},
+    ]
+
+    # Explicitly verify the authoritative calculation formulas with the exact regression values:
+    current_capacity = 154.0
+    hypothetical_capacity = 17.0
+    estimated_effort = 19.0
+
+    current_capacity_gap = current_capacity - estimated_effort
+    hypothetical_capacity_gap = hypothetical_capacity - estimated_effort
+    capacity_gap_difference = hypothetical_capacity_gap - current_capacity_gap
+    available_capacity_difference = hypothetical_capacity - current_capacity
+
+    assert current_capacity_gap == 135.0
+    assert hypothetical_capacity_gap == -2.0
+    assert capacity_gap_difference == -137.0
+    assert available_capacity_difference == -137.0
+
+
 

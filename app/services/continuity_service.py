@@ -30,13 +30,13 @@ async def _fetch_github_data(project_id: str):
         
         async def _safe_fetch(url, default):
             try:
-                return await fetch_github_api(url)
+                return await asyncio.wait_for(fetch_github_api(url), timeout=3.0)
             except Exception:
                 return default
 
         async def _fetch_branches_safe(url):
             try:
-                data = await fetch_github_api(url)
+                data = await asyncio.wait_for(fetch_github_api(url), timeout=3.0)
                 return data, None
             except HTTPException as he:
                 return [], he.detail
@@ -91,7 +91,25 @@ async def _fetch_github_data(project_id: str):
     except Exception:
         return None
 
+# Context cache: project_id -> (timestamp, context_str, raw_dict)
+_PROJECT_CONTEXT_CACHE: dict[str, tuple[float, str, dict]] = {}
+CACHE_TTL_SECONDS = 30.0
+
+def get_cached_project_context(project_id: str) -> Optional[tuple[str, dict]]:
+    if project_id in _PROJECT_CONTEXT_CACHE:
+        ts, c_str, raw = _PROJECT_CONTEXT_CACHE[project_id]
+        if time.time() - ts < CACHE_TTL_SECONDS:
+            return c_str, raw
+    return None
+
+def set_cached_project_context(project_id: str, context_str: str, raw_dict: dict):
+    _PROJECT_CONTEXT_CACHE[project_id] = (time.time(), context_str, raw_dict)
+
 async def build_project_context(project_id: str) -> tuple[str, dict]:
+    cached = get_cached_project_context(project_id)
+    if cached:
+        return cached
+
     # 1. Fetch Project with connection safety
     try:
         proj_resp = await asyncio.to_thread(lambda: _db().table("projects").select("*, users(name)").eq("id", project_id).execute())
@@ -329,7 +347,9 @@ async def build_project_context(project_id: str) -> tuple[str, dict]:
         "unmapped_commits": unmapped_commits,
         "unmapped_prs": unmapped_prs
     }
-    return "\n".join(context), raw_dict
+    context_str = "\n".join(context)
+    set_cached_project_context(project_id, context_str, raw_dict)
+    return context_str, raw_dict
 
 _build_project_context = build_project_context
 
@@ -1049,24 +1069,15 @@ async def update_project_context_and_refresh_handover(
             entity_id=project_id,
             description="Updated project context and handover notes"
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("[Continuity Context] Failed to log activity: %s", str(e))
+
+    _PROJECT_CONTEXT_CACHE.pop(project_id, None)
+    from app.services.project_service import invalidate_project_cache
+    invalidate_project_cache()
         
     return await generate_continuity_summary_service(project_id, current_user)
 
-# Context cache: project_id -> (timestamp, context_str, raw_dict)
-_PROJECT_CONTEXT_CACHE: dict[str, tuple[float, str, dict]] = {}
-CACHE_TTL_SECONDS = 30.0
-
-def get_cached_project_context(project_id: str) -> Optional[tuple[str, dict]]:
-    if project_id in _PROJECT_CONTEXT_CACHE:
-        ts, c_str, raw = _PROJECT_CONTEXT_CACHE[project_id]
-        if time.time() - ts < CACHE_TTL_SECONDS:
-            return c_str, raw
-    return None
-
-def set_cached_project_context(project_id: str, context_str: str, raw_dict: dict):
-    _PROJECT_CONTEXT_CACHE[project_id] = (time.time(), context_str, raw_dict)
 
 
 def classify_question_intent(question: str) -> str:
