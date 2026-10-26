@@ -35,6 +35,8 @@ class SimulationBaseline(BaseModel):
     remaining_tasks: int = 0
     remaining_estimated_effort_hours: Optional[float] = None
     available_capacity_hours: Optional[float] = None
+    capacity_gap_hours: Optional[float] = None
+    capacity_gap_status: str = "calculated"  # "calculated" | "partial" | "unavailable"
     working_days: int = 0
     working_weeks: float = 0.0
     tasks_with_estimates: int = 0

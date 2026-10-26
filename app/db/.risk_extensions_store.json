@@ -514,5 +514,65 @@
         "details": "Risk auto-detected: Project passed schedule target of 2026-10-25 with progress at 50%."
       }
     ]
+  },
+  "d3ee7d57-ff8f-40b9-bf20-565e4d8f19c9": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-26 by 0 day(s).",
+    "severity_reason": "Overdue by 0 days (High priority deadline breach)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1b2825e1-59fc-463e-bbbd-005d37106eda",
+        "timestamp": "2026-10-26T06:07:22.395667+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task missed deadline of 2026-10-26 by 0 day(s)."
+      }
+    ]
+  },
+  "394568f9-07ba-4126-aec6-2b8968605237": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-26 by 0 day(s).",
+    "severity_reason": "Overdue by 0 days (High priority deadline breach)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f68fa142-cf19-4e84-8596-d6a7b087a4d7",
+        "timestamp": "2026-10-26T06:07:22.395667+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task missed deadline of 2026-10-26 by 0 day(s)."
+      }
+    ]
+  },
+  "428c1053-9ec6-4d03-955e-7f80ac5d6c66": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-26 by 0 day(s).",
+    "severity_reason": "Overdue by 0 days (High priority deadline breach)",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "39393012-8814-4a17-803b-38714f110974",
+        "timestamp": "2026-10-26T06:07:22.395667+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task missed deadline of 2026-10-26 by 0 day(s)."
+      }
+    ]
   }
 }

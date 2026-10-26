@@ -22,6 +22,17 @@ from app.schemas.notification import NotificationType
 from app.services.notification_service import NotificationService
 
 
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+_PROJECTS_CACHE: Dict[tuple, tuple[float, List[ProjectOut]]] = {}
+PROJECTS_CACHE_TTL_SECONDS = 30.0
+
+def invalidate_project_cache() -> None:
+    """Clear in-memory project cache so fresh records are retrieved."""
+    global _PROJECTS_CACHE
+    _PROJECTS_CACHE.clear()
+
 def _db():
     return get_supabase_client()
 
@@ -146,7 +157,21 @@ def list_projects_service(
     - Admin: View all projects (supports status, pm, and search filters).
     - Project Manager: View projects they manage.
     - Developer: View all projects (or filtered as requested).
+    Uses fast in-memory caching to eliminate redundant 5-8 second database delays.
     """
+    cache_key = (
+        str(current_user.id),
+        str(current_user.role.value),
+        str(status_filter or "").lower(),
+        str(pm_filter or ""),
+        str(search or "").lower(),
+    )
+    now = time.time()
+    if cache_key in _PROJECTS_CACHE:
+        cached_time, cached_result = _PROJECTS_CACHE[cache_key]
+        if now - cached_time < PROJECTS_CACHE_TTL_SECONDS:
+            return cached_result
+
     try:
         query = _db().table("projects").select("*")
 
@@ -173,19 +198,35 @@ def list_projects_service(
         resp = query.execute()
         rows = resp.data or []
 
-        # Fetch tasks to compute counts
+        managers_map = {}
         if rows:
             project_ids_in_resp = [p["id"] for p in rows]
-            task_resp = _db().table("tasks").select("project_id, status").in_("project_id", project_ids_in_resp).execute()
-            tasks = task_resp.data or []
-            
+
+            def _get_tasks():
+                try:
+                    return _db().table("tasks").select("project_id, status").in_("project_id", project_ids_in_resp).execute().data or []
+                except Exception:
+                    return []
+
+            def _get_managers():
+                return _populate_managers(rows)
+
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                tasks_future = executor.submit(_get_tasks)
+                managers_future = executor.submit(_get_managers)
+                tasks = tasks_future.result()
+                managers_map = managers_future.result()
+
             for p in rows:
-                p_tasks = [t for t in tasks if str(t["project_id"]) == str(p["id"])]
+                p_tasks = [t for t in tasks if str(t.get("project_id")) == str(p["id"])]
                 p["task_count"] = len(p_tasks)
                 p["completed_task_count"] = sum(1 for t in p_tasks if (t.get("status") or "").upper() == "COMPLETED")
+        else:
+            managers_map = {}
 
-        managers_map = _populate_managers(rows)
-        return [_row_to_project_out(r, managers_map) for r in rows]
+        result = [_row_to_project_out(r, managers_map) for r in rows]
+        _PROJECTS_CACHE[cache_key] = (now, result)
+        return result
 
     except HTTPException:
         raise
@@ -341,6 +382,7 @@ def create_project_service(
                 description=f"Project '{created_row['name']}' was assigned to {pm_name}"
             )
         
+        invalidate_project_cache()
         return _row_to_project_out(created_row, managers_map)
     except HTTPException:
         raise
@@ -518,6 +560,7 @@ def update_project_service(
                 description=f"Project '{updated_row['name']}' timeline was updated"
             )
 
+        invalidate_project_cache()
         return _row_to_project_out(updated_row, managers_map)
     except HTTPException:
         raise
@@ -594,6 +637,7 @@ def delete_project_service(
             description=f"Project '{archived_row['name']}' was archived"
         )
         
+        invalidate_project_cache()
         return _row_to_project_out(archived_row, managers_map)
     except HTTPException:
         raise
