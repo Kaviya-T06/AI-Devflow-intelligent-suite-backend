@@ -475,8 +475,17 @@
         "details": "Escalated to ADMIN by Alice Admin: very important",
         "id": "9722d4cc-218a-427f-809c-7b80c126ab4f",
         "timestamp": "2026-10-24T16:05:56.150624+00:00"
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "a6329183-624f-4df0-b28d-2d4e2f4cb10a",
+        "timestamp": "2026-10-27T08:48:07.779191+00:00"
       }
-    ]
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED"
   },
   "57af058c-ea95-4979-b963-cc28d016b2e6": {
     "is_escalated": true,
@@ -492,8 +501,17 @@
         "details": "Escalated to ADMIN by Tharun: Important",
         "id": "6f0e9d38-3e60-45d1-ab29-3d8237ede5be",
         "timestamp": "2026-10-24T16:07:05.152297+00:00"
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d90f6949-9d4f-4067-bc28-32c02a86035f",
+        "timestamp": "2026-10-27T08:48:09.420154+00:00"
       }
-    ]
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED"
   },
   "2ba7ffc6-1754-4bc2-9b3c-0f1885f4fe6f": {
     "detection_rule": "end_date < current_timestamp AND progress < 100",
@@ -501,7 +519,7 @@
     "severity_reason": "Project deadline breached at 50% progress",
     "is_recurring": false,
     "recurrence_count": 0,
-    "action_status": "NOT_STARTED",
+    "action_status": "COMPLETED",
     "is_escalated": false,
     "comments": [],
     "history": [
@@ -512,8 +530,16 @@
         "user_name": "System Detection",
         "action": "DETECTED",
         "details": "Risk auto-detected: Project passed schedule target of 2026-10-25 with progress at 50%."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7bf7ee30-10f2-4074-bc5f-992caf7a85d2",
+        "timestamp": "2026-10-27T14:38:49.010985+00:00"
       }
-    ]
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
   },
   "394568f9-07ba-4126-aec6-2b8968605237": {
     "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
@@ -549,7 +575,7 @@
     "severity_reason": "Overdue by 0 days (High priority deadline breach)",
     "is_recurring": false,
     "recurrence_count": 0,
-    "action_status": "NOT_STARTED",
+    "action_status": "COMPLETED",
     "is_escalated": false,
     "comments": [],
     "history": [
@@ -560,8 +586,16 @@
         "user_name": "System Detection",
         "action": "DETECTED",
         "details": "Risk auto-detected: Task missed deadline of 2026-10-26 by 0 day(s)."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "928eaa9a-ffb5-4f3d-9715-e20185542ea6",
+        "timestamp": "2026-10-27T08:48:11.573204+00:00"
       }
-    ]
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
   },
   "428c1053-9ec6-4d03-955e-7f80ac5d6c66": {
     "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
@@ -569,7 +603,7 @@
     "severity_reason": "Overdue by 0 days (High priority deadline breach)",
     "is_recurring": false,
     "recurrence_count": 0,
-    "action_status": "NOT_STARTED",
+    "action_status": "COMPLETED",
     "is_escalated": false,
     "comments": [],
     "history": [
@@ -580,6 +614,3328 @@
         "user_name": "System Detection",
         "action": "DETECTED",
         "details": "Risk auto-detected: Task missed deadline of 2026-10-26 by 0 day(s)."
+      },
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "eb480a93-78e9-4c58-822b-04fe0152c892",
+        "timestamp": "2026-10-27T08:48:13.311390+00:00"
+      }
+    ],
+    "resolution_notes": "Automatically resolved: underlying condition cleared."
+  },
+  "1fd65592-f8e7-4440-817c-b620a90687ee": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "20ee194e-05d5-40af-b685-0c1577acfaff",
+        "timestamp": "2026-10-27T08:44:31.810652+00:00"
+      }
+    ]
+  },
+  "e036f443-d9b5-4343-aff7-464aac8af7d7": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "798ab4ee-ebdd-4a45-a531-3485f320154d",
+        "timestamp": "2026-10-27T08:45:57.263894+00:00"
+      }
+    ]
+  },
+  "372da5a3-c659-44c0-98b4-8a5d70230345": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "da8a8d6b-f2c6-4787-8372-508976a7d4dc",
+        "timestamp": "2026-10-27T08:45:58.241530+00:00"
+      }
+    ]
+  },
+  "4531203a-8f47-4db1-a290-def4707d0648": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f82a7df8-ae23-490b-b7ab-84daf237cc57",
+        "timestamp": "2026-10-27T08:45:59.264922+00:00"
+      }
+    ]
+  },
+  "3e7bddaf-d064-46f6-9ee7-7411af0197d3": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7c807884-1bbe-4029-b6c1-f8bd20267b20",
+        "timestamp": "2026-10-27T08:46:00.291804+00:00"
+      }
+    ]
+  },
+  "14047b9c-98e4-4369-8e6c-a4d5e127a7de": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "0586f3cc-e6e8-4efa-a0fa-f28a18114e33",
+        "timestamp": "2026-10-27T08:46:01.416505+00:00"
+      }
+    ]
+  },
+  "0e73f5c3-2cf2-4b29-ae81-925d44d12638": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "3ae8c07f-fc34-4e9a-8269-debb35120559",
+        "timestamp": "2026-10-27T08:46:02.471240+00:00"
+      }
+    ]
+  },
+  "b0211192-6ad9-4d44-aa01-b296eb89e408": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "957559b2-1a93-438f-ae59-97dc723170e0",
+        "timestamp": "2026-10-27T08:46:03.354089+00:00"
+      }
+    ]
+  },
+  "c7928d3d-7bdd-4038-9353-9e400a7a0560": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "bfffa52d-a9ff-438e-9e5f-82c4d60cd5f0",
+        "timestamp": "2026-10-27T08:46:04.767408+00:00"
+      }
+    ]
+  },
+  "0b9df328-61db-487e-98a7-05c53b13c101": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "8d15516d-cb79-4600-a987-62b3f9107abd",
+        "timestamp": "2026-10-27T08:46:05.820159+00:00"
+      }
+    ]
+  },
+  "c121f0ed-9995-44c3-a084-87aa5a86a56a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d558c2af-2935-4722-be27-d791afad049e",
+        "timestamp": "2026-10-27T08:46:06.847677+00:00"
+      }
+    ]
+  },
+  "eae7b43e-00f4-4c1a-9e3f-86ecc6b72fed": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "26fd7c92-e303-4271-a999-1902d22f5c56",
+        "timestamp": "2026-10-27T08:46:07.867501+00:00"
+      }
+    ]
+  },
+  "e1522754-39d1-4a09-a244-eeaeeab64aa3": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "24e3e9e0-2e8d-4205-9386-c6f3c88bf2ce",
+        "timestamp": "2026-10-27T08:46:08.794585+00:00"
+      }
+    ]
+  },
+  "04145d5a-187a-4899-8b8d-d1eb77ef3f2e": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "dcf03635-1f24-4fd5-b185-b7148cf5e46c",
+        "timestamp": "2026-10-27T08:46:09.708452+00:00"
+      }
+    ]
+  },
+  "e17c1d0f-a1ff-4039-86ea-cdc81afa2265": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "0de7c1d3-316c-4e0c-92fc-62de5d4643d0",
+        "timestamp": "2026-10-27T08:46:10.638259+00:00"
+      }
+    ]
+  },
+  "10347d0d-a559-46dd-af2f-60210a9fc651": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "6563d81d-df05-4460-978b-56764e970294",
+        "timestamp": "2026-10-27T08:46:11.659165+00:00"
+      }
+    ]
+  },
+  "05622565-48b0-45af-9592-2f7da45e8beb": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1b052be3-e33e-4a66-8e88-ef80f41baf52",
+        "timestamp": "2026-10-27T08:46:12.675068+00:00"
+      }
+    ]
+  },
+  "b1bbd38d-9ebd-441b-90df-690428dce324": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "a5ba0b24-3d0e-4fb4-af22-cbf23afc2229",
+        "timestamp": "2026-10-27T08:46:13.814084+00:00"
+      }
+    ]
+  },
+  "1288c539-1665-46f3-8cc2-616d0ad571b4": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "ef21d71b-43bd-4f3f-af02-a9a8ce3e69ac",
+        "timestamp": "2026-10-27T08:46:15.138948+00:00"
+      }
+    ]
+  },
+  "504e16f2-e82a-46b4-b400-51fdba8b53ea": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "fa5cfef2-7e09-4a65-b204-3917e650563f",
+        "timestamp": "2026-10-27T08:46:16.158397+00:00"
+      }
+    ]
+  },
+  "76116c80-9d4a-4bfc-bbcb-c2732d5178f5": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "c03dd079-75e0-4b05-ba45-b3195cf84e27",
+        "timestamp": "2026-10-27T08:46:17.082014+00:00"
+      }
+    ]
+  },
+  "ac2187bd-5f02-4bdf-b40c-a51b8f17ed96": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "8a4f46d0-0e29-45f9-8380-1553fbbbbcb6",
+        "timestamp": "2026-10-27T08:46:17.902759+00:00"
+      }
+    ]
+  },
+  "e121c8b6-84e2-48f6-ae22-2da1c61d5974": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f1e8f061-b49a-418c-9f0b-56c1dd6bdc8f",
+        "timestamp": "2026-10-27T08:46:18.820227+00:00"
+      }
+    ]
+  },
+  "c2a4387f-c101-408f-89ad-9ed0fad46c82": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "edf04e62-7fae-45e1-84f4-9b1028c64b7c",
+        "timestamp": "2026-10-27T08:46:19.837278+00:00"
+      }
+    ]
+  },
+  "cc3a5347-ef50-4527-a3da-9c929d16444b": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "00813e1d-a94f-433f-8a38-be85bc468a4d",
+        "timestamp": "2026-10-27T08:46:21.791589+00:00"
+      }
+    ]
+  },
+  "d0c24827-7dc5-4cbb-aa20-f44c9e8e7c6a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "c6aba18d-8463-4595-ba07-35cfc26ace53",
+        "timestamp": "2026-10-27T08:46:22.818165+00:00"
+      }
+    ]
+  },
+  "056c9e03-cd65-48e2-b235-991c309547a8": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "3d0cb4a3-42ad-49da-964a-7cc4b6f90b45",
+        "timestamp": "2026-10-27T08:46:23.869780+00:00"
+      }
+    ]
+  },
+  "404a9e1c-ebd7-4259-88e5-dbcbc424559b": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "5f955446-631e-4131-8b75-0a8aa6aec2fd",
+        "timestamp": "2026-10-27T08:46:24.867649+00:00"
+      }
+    ]
+  },
+  "4aab190c-7ab3-4288-810f-a7c3a63b71a6": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1be9b3db-7c95-4e68-9940-6745111cf091",
+        "timestamp": "2026-10-27T08:46:25.968286+00:00"
+      }
+    ]
+  },
+  "8a59b02e-1793-4ca2-856e-d2bb49053748": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f13b486d-1d81-4077-a4b1-00244e10e00a",
+        "timestamp": "2026-10-27T08:46:26.915666+00:00"
+      }
+    ]
+  },
+  "96703fbe-f91f-41c1-993d-56a44e9384b7": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "09ed7aa5-3b6b-4dc0-8aca-072eef5e5bc9",
+        "timestamp": "2026-10-27T08:46:28.450602+00:00"
+      }
+    ]
+  },
+  "467eda02-4cb3-4af7-8b7b-3bec50a424a9": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "83ce5bac-a170-4bcd-a9a1-df850439c148",
+        "timestamp": "2026-10-27T08:46:29.379609+00:00"
+      }
+    ]
+  },
+  "bf966d51-5d67-49e9-9953-2003ad782649": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7d47d07a-f0ec-4b77-8389-75d9501ce444",
+        "timestamp": "2026-10-27T08:46:30.396618+00:00"
+      }
+    ]
+  },
+  "f2668627-70e8-4b52-9568-1873dbfca925": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "62edcab9-2cad-4e4d-8a25-b653fe4fd41e",
+        "timestamp": "2026-10-27T08:46:31.528048+00:00"
+      }
+    ]
+  },
+  "4b64f443-b546-42dc-897a-efc37b96acd9": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "e398677f-b44d-4ead-bd0e-7f321f47df6c",
+        "timestamp": "2026-10-27T08:46:32.653009+00:00"
+      }
+    ]
+  },
+  "e54c959c-2e8a-403f-8910-f421b5813e01": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "276622e6-0561-473b-a15d-d00cd4d41592",
+        "timestamp": "2026-10-27T08:46:33.552764+00:00"
+      }
+    ]
+  },
+  "6658ff9b-0c1c-417f-b670-01d8442e2b9a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7efe592f-3b64-4e3f-9cc8-5bcceb10e219",
+        "timestamp": "2026-10-27T08:46:34.502501+00:00"
+      }
+    ]
+  },
+  "da91ee30-d392-4ee9-9a9c-a2ccd0dc54bf": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "036afc9d-8885-46f9-a437-fc318263a068",
+        "timestamp": "2026-10-27T08:46:35.516234+00:00"
+      }
+    ]
+  },
+  "0dc4ffdb-43d2-49b1-9d95-6409348e1635": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "2b6e997b-395e-418e-9c22-f3533db8af4d",
+        "timestamp": "2026-10-27T08:46:36.651944+00:00"
+      }
+    ]
+  },
+  "29713d67-4683-49c3-a9c9-11eed7752415": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "527f7ade-61cc-4231-a822-7e6753f377a8",
+        "timestamp": "2026-10-27T08:46:37.358365+00:00"
+      }
+    ]
+  },
+  "77595076-0ce3-4aae-8d1f-5bdc70aed3e3": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f151567b-0fdc-4813-9ef5-07d99729af11",
+        "timestamp": "2026-10-27T08:46:38.080158+00:00"
+      }
+    ]
+  },
+  "240eef66-a0ad-41c0-beea-0a245b10abf6": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "772614e3-a07f-4348-8fe3-3e27a8cc5f02",
+        "timestamp": "2026-10-27T08:46:38.694970+00:00"
+      }
+    ]
+  },
+  "fd7ccfd7-8303-467e-9954-52a1b2ee911a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "9a4ccb75-3a02-4c54-950f-4239ea19714f",
+        "timestamp": "2026-10-27T08:46:39.507190+00:00"
+      }
+    ]
+  },
+  "d16dbd23-c2ba-40c6-96b5-663fda373d97": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "cf550b15-fa0f-4e79-af0f-c9d12f618ef6",
+        "timestamp": "2026-10-27T08:46:40.336407+00:00"
+      }
+    ]
+  },
+  "da3ff690-3ede-41bd-8f47-61e39e074a4c": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "95bfab2d-5ebf-4f4f-accc-33de16648943",
+        "timestamp": "2026-10-27T08:46:41.253848+00:00"
+      }
+    ]
+  },
+  "61bfc26e-ce40-4164-948f-7859d9bbb4ed": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f38387d5-50a0-40c3-ac3c-7795bf05e4fc",
+        "timestamp": "2026-10-27T08:46:41.965467+00:00"
+      }
+    ]
+  },
+  "ce3b26f0-323e-4c87-9803-9db6fcb52f1d": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "b297ceec-673e-40ff-9464-4cc1478a5eea",
+        "timestamp": "2026-10-27T08:46:43.100254+00:00"
+      }
+    ]
+  },
+  "9c3eaa45-811a-4351-9ba4-a92f461f673a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "5e1a103e-c5f5-4977-ae6d-782f8c8b3f2d",
+        "timestamp": "2026-10-27T08:46:44.441677+00:00"
+      }
+    ]
+  },
+  "3e6e30bb-6097-4d3c-a2f3-b6273e60fe4e": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "f163b435-24f1-488f-aa3b-565a8bc88050",
+        "timestamp": "2026-10-27T08:46:46.170364+00:00"
+      }
+    ]
+  },
+  "7fe174fd-ed1a-4873-9b07-08fdb8feb194": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "dbf1cb0c-14a1-44a1-a16a-0dd9fa4d8453",
+        "timestamp": "2026-10-27T08:46:48.063608+00:00"
+      }
+    ]
+  },
+  "cf040d78-d881-4d4d-b596-8673f45c9d47": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d26983b8-9bd8-4695-a084-beb9e73a46bc",
+        "timestamp": "2026-10-27T08:46:49.234869+00:00"
+      }
+    ]
+  },
+  "b41ad28e-a2ca-47b8-b2e1-9c5899e3dcc0": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1800f28d-3114-4d36-bae0-ab017a989425",
+        "timestamp": "2026-10-27T08:46:50.472532+00:00"
+      }
+    ]
+  },
+  "ecf88d16-a6e7-4946-9c44-fd555e0aa339": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "4d4691e7-9d0e-427a-8f3f-71b5f708ce24",
+        "timestamp": "2026-10-27T08:46:52.315731+00:00"
+      }
+    ]
+  },
+  "8c6021bd-2dca-4a51-b4e2-a2971a52ee43": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "dfc15ad8-1f7c-40a0-b059-cc965188c7be",
+        "timestamp": "2026-10-27T08:46:53.540832+00:00"
+      }
+    ]
+  },
+  "bcb8d0e1-9288-4857-ad08-8ac492539525": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d55352d9-a208-4aaf-8d52-1556cc80089b",
+        "timestamp": "2026-10-27T08:46:54.874791+00:00"
+      }
+    ]
+  },
+  "449bf8b4-b947-4ca5-a06c-fe87c004f1cf": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "bfa092a3-c6a5-400b-9fd2-56efccf2d61b",
+        "timestamp": "2026-10-27T08:46:56.577047+00:00"
+      }
+    ]
+  },
+  "014d36ae-da61-4d88-8c51-4ad852b71629": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7c9455a1-d419-488f-8ac0-5098b497b800",
+        "timestamp": "2026-10-27T08:46:57.838845+00:00"
+      }
+    ]
+  },
+  "017bfa89-33c4-4971-9b9d-92526c6ecdb7": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1915681a-aeab-47af-a74d-3baf9f1063f4",
+        "timestamp": "2026-10-27T08:46:59.687001+00:00"
+      }
+    ]
+  },
+  "fd265dd7-eee2-48cc-b7a2-947b39e2c009": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "91ba4fde-a56f-417c-9e6e-ee20d5e85cc7",
+        "timestamp": "2026-10-27T08:47:02.774076+00:00"
+      }
+    ]
+  },
+  "066fd810-e36f-41e4-99ce-7b1f94a86bc9": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "45523495-b17e-4514-84de-528d0146ff14",
+        "timestamp": "2026-10-27T08:47:06.659604+00:00"
+      }
+    ]
+  },
+  "4554bc38-4f50-45b9-aa6d-ff64204f6710": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "da34dcd5-22bb-4f48-9215-3df1de2068f1",
+        "timestamp": "2026-10-27T08:47:09.414346+00:00"
+      }
+    ]
+  },
+  "1b7e34b4-f972-4899-87a2-3fb4b9e6b6db": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "476bcc50-db08-424f-bbdc-47c0eee44514",
+        "timestamp": "2026-10-27T08:47:11.781707+00:00"
+      }
+    ]
+  },
+  "16322e20-ddfd-45b3-977b-db0d586251cf": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "e7d3f0ce-7051-4e74-80bb-2847a9e74134",
+        "timestamp": "2026-10-27T08:47:13.305607+00:00"
+      }
+    ]
+  },
+  "5b84d5b7-d8f0-4db3-b165-689327add1d6": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "77639211-9563-40ec-a7e5-5c6c562f608d",
+        "timestamp": "2026-10-27T08:47:14.795739+00:00"
+      }
+    ]
+  },
+  "dbccdef1-145a-49c7-a379-214f62fbaa09": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "91f7bb84-f4df-4dbb-b3b9-d7092ea4c9ce",
+        "timestamp": "2026-10-27T08:47:16.338807+00:00"
+      }
+    ]
+  },
+  "0ea2dc44-3906-4ccd-8a9f-7a2546e3b726": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "8e72372f-c72a-45d6-a302-984677a70994",
+        "timestamp": "2026-10-27T08:47:17.916614+00:00"
+      }
+    ]
+  },
+  "84d25119-1d3f-4fdc-983b-2f9f68f225ea": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "aec8fc69-cdf0-4dd4-8c92-4ec74526ce1b",
+        "timestamp": "2026-10-27T08:47:19.040121+00:00"
+      }
+    ]
+  },
+  "024eaf22-2ebe-4b2e-be34-8a72e7b76d8f": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "cf6976b2-5a2a-4e49-bb47-25a11941064d",
+        "timestamp": "2026-10-27T08:47:20.785578+00:00"
+      }
+    ]
+  },
+  "22375430-4882-4317-ab48-e1d245a07533": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "96738f0e-990b-49f9-a29a-d0ce11d41dd4",
+        "timestamp": "2026-10-27T08:47:22.520923+00:00"
+      }
+    ]
+  },
+  "b3d66dd3-f698-47b9-9fe2-fc751537cd46": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "08dba447-2ff5-436c-9b5d-4e9f40786bb8",
+        "timestamp": "2026-10-27T08:47:24.400234+00:00"
+      }
+    ]
+  },
+  "5543c63f-5923-4487-b7b2-641341d7e993": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "70e72bee-456c-4e16-9556-03091550601d",
+        "timestamp": "2026-10-27T08:47:25.703817+00:00"
+      }
+    ]
+  },
+  "2516a675-7b46-4a4f-bd04-aefaffc4b606": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "8701a3ce-0723-4b5d-864a-2d69438ac1db",
+        "timestamp": "2026-10-27T08:47:27.041917+00:00"
+      }
+    ]
+  },
+  "dbc57701-1f9c-4f43-89d9-cf6771f5544b": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "07c3d586-a643-4b05-9d5b-464aa35c1363",
+        "timestamp": "2026-10-27T08:47:28.667271+00:00"
+      }
+    ]
+  },
+  "cd5a640f-8884-4931-bb3f-7f9cb534308f": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "7383ebd5-c89f-4614-bf87-1b65eb6e8388",
+        "timestamp": "2026-10-27T08:47:30.769610+00:00"
+      }
+    ]
+  },
+  "4570e2fd-205a-4bad-afaf-8cda87b753fc": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "b5e5d31f-f3e5-498e-aede-eb46e94fbd2f",
+        "timestamp": "2026-10-27T08:47:34.880294+00:00"
+      }
+    ]
+  },
+  "d29b8fe8-046d-4772-adf2-56721193cc42": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d79251e7-3325-4059-bcc8-5463c58f49dd",
+        "timestamp": "2026-10-27T08:47:36.558439+00:00"
+      }
+    ]
+  },
+  "aa072d1d-aa90-4a10-ab82-14a9e48bcb0d": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "038be6d8-e43a-4e7d-88c3-645f2d21a9fa",
+        "timestamp": "2026-10-27T08:47:38.047827+00:00"
+      }
+    ]
+  },
+  "febe3e66-b70a-465f-8bf0-a751ec9a7da2": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "3e0c1245-d35e-417d-b296-5b7a6dbb7fcc",
+        "timestamp": "2026-10-27T08:47:40.534584+00:00"
+      }
+    ]
+  },
+  "1be753f2-80a4-4a45-8100-622666473581": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "9671d360-a2a1-495c-a746-3dc762375ec5",
+        "timestamp": "2026-10-27T08:47:41.786932+00:00"
+      }
+    ]
+  },
+  "95f2538e-7fa0-42d9-b1f6-82030c8e75af": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "9ecb5f57-efb9-4130-81ed-bd7b4b9566c8",
+        "timestamp": "2026-10-27T08:47:43.456262+00:00"
+      }
+    ]
+  },
+  "81d4a3c2-a11d-4b38-a0fc-89bff6fca389": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "978ede98-a132-48f1-8861-791f0b1a7860",
+        "timestamp": "2026-10-27T08:47:45.219016+00:00"
+      }
+    ]
+  },
+  "6c0761f8-2bf3-4100-a448-e0511354d56f": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "eb46942a-b9db-471c-a807-2483005b31b0",
+        "timestamp": "2026-10-27T08:47:47.310556+00:00"
+      }
+    ]
+  },
+  "6d658393-a5d7-4c74-a7fe-f13604862c05": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "16949a05-5d84-466a-9811-61cc51dacd3e",
+        "timestamp": "2026-10-27T08:47:48.638490+00:00"
+      }
+    ]
+  },
+  "84ddcf63-6499-4cbc-a4de-f173791f45c0": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "4f1443d2-9a79-45cd-9135-9cb3c04c1039",
+        "timestamp": "2026-10-27T08:47:50.373223+00:00"
+      }
+    ]
+  },
+  "9868a619-e5a1-42ba-ad82-1ba507825712": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "b66308c9-b903-4d65-9c15-456dc7fc0f43",
+        "timestamp": "2026-10-27T08:47:52.534567+00:00"
+      }
+    ]
+  },
+  "b8592393-63cc-479f-b23d-fe430f6c028e": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "29684415-9d2e-404a-9111-5652aed387a7",
+        "timestamp": "2026-10-27T08:47:54.063750+00:00"
+      }
+    ]
+  },
+  "4ac4c822-66c4-411e-8b16-1208f705dd96": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "8b6720f7-88bc-4f39-980c-882d4e01eef8",
+        "timestamp": "2026-10-27T08:47:55.456989+00:00"
+      }
+    ]
+  },
+  "38c91274-75a5-44de-a7e8-b3ea1b454eb4": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "4c340168-d968-4532-84bc-a83a1de352cd",
+        "timestamp": "2026-10-27T08:47:56.696426+00:00"
+      }
+    ]
+  },
+  "790cb298-d99d-4577-8b6a-62df07605934": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "cb58ae7c-2b24-4afb-9a3a-190ccb2910d9",
+        "timestamp": "2026-10-27T08:47:58.264625+00:00"
+      }
+    ]
+  },
+  "f53c140c-0d7e-44b8-a20b-2ad2e4d1cecf": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "1bc0016c-9849-4fe9-9d08-c2b4fbadba6d",
+        "timestamp": "2026-10-27T08:47:59.874099+00:00"
+      }
+    ]
+  },
+  "d18c603e-4851-4a4b-bfdc-b9b3366b4b15": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "d5b400b9-e68a-4eb9-84a7-26f7371ee410",
+        "timestamp": "2026-10-27T08:48:01.330588+00:00"
+      }
+    ]
+  },
+  "af66e3c4-4792-477d-ac7f-85bddf2b4636": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "5be57770-9034-49f2-b531-101e1a218dc1",
+        "timestamp": "2026-10-27T08:48:02.560746+00:00"
+      }
+    ]
+  },
+  "a157b2e1-f9eb-4ca8-90de-0c4acab3434a": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "3c09176d-0316-4041-89e5-c84106274cfe",
+        "timestamp": "2026-10-27T08:48:03.688717+00:00"
+      }
+    ]
+  },
+  "498c6324-9147-4289-885a-fce49adb575c": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "b6289d47-a337-4794-b993-7cc943768cee",
+        "timestamp": "2026-10-27T08:48:05.221338+00:00"
+      }
+    ]
+  },
+  "37339067-8d4b-499a-813f-00bb22a5e111": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "30f2e147-cd2e-4537-a981-7d45c02ad15b",
+        "timestamp": "2026-10-27T08:48:06.457326+00:00"
+      }
+    ]
+  },
+  "26997dee-9ba5-4761-81f4-5592aebca6aa": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "43ace738-a39d-43f1-bca3-05b3a9ee97d7",
+        "timestamp": "2026-10-27T08:48:10.373173+00:00"
+      }
+    ]
+  },
+  "3f2ec28e-10cc-452c-adf7-7b69fba26396": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "a9381dd9-3eb2-4b1a-a094-026354f7255f",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "2a9bc1ec-bab5-409a-9687-daa369925f3b": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e998ddc5-8ad6-495e-9d48-16f461403991",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "5ca666b1-b8eb-406e-84cc-e7ec849599d3": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e7f439b9-fc5c-4ce3-ad62-16e7e95a4d1e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "0c803be9-9740-455d-bbd4-6f07745c4e3f": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "8009a3da-b807-49ab-b6d2-803cb688ce8b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "fd602819-50a1-4055-a208-3d87fd3d86e5": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "61fce538-3ffa-4534-8ca1-84a8392eaf54",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "992ed6db-7261-4010-bd66-ae49e241e726": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1615d5b5-d12d-4fa3-b19d-083184b8a05e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "950f61fb-bfce-4515-9ae9-0bebf356a566": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "4851ec51-221b-47b4-ade0-d400eb1aa993",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "1fec8c5e-19d0-462b-b89b-b7d56a9551c2": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e731c2fd-00ae-485b-bbb3-87d39c122abf",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "3d455600-30ea-4589-ae26-8d74d0f69918": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "888aab40-5201-40c9-855c-b2c5c7d5ad1e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "d3d3a582-d411-4f26-abb7-6fbc13104105": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "50c38a38-4bb8-488c-8b93-9c1eba07f77d",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "a81fb933-5247-4cab-a24b-0bd0ac34a509": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f5d89aff-e635-44a5-9618-ff9f82d2ddf6",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "683b6722-0991-4d97-b35c-af0784ee1996": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "31357d9c-de8a-435b-b2fb-ec0aba593e97",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "54611fee-4650-487b-848b-0adbc27ad9dd": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "28470cf3-908e-4424-acb4-0c44eff0692b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "a1071e7c-9914-4e19-96e5-b6c7f2d11d0c": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "308947f8-c05f-47e7-9161-57930099dbf5",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "934a465f-50b5-4ab5-bcd7-c6486c63fc8a": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "370a7585-7a95-4f6b-9859-677adaf837ee",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "19967184-2e13-4c10-91ec-e82bc74ca181": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "53f42490-05b3-4186-aa3c-a3a582c7263b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "5b0514ed-57af-40b2-9072-fd7456372a76": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "08ea03d8-81c7-4065-bcc5-910505e4e15c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "0f1fe028-9cd5-4338-b84b-e5ef732f73a7": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "c2fc6a6b-3b9c-4fe0-9c14-1214be6fcf7c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "df0ad72b-a63a-4cb6-baa9-d7ae6ab67e92": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "c430261e-5566-4110-8d49-f38a6d865505",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "1f4104f1-1a94-486a-89ce-f2df30494255": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "4c8ea64e-d1a3-479c-a2a3-3d909ec91965",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "ab959482-4a86-497a-8236-80a64af96902": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "88926aaf-d4c0-4255-8ca7-9e4713c7b4cf",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "5b6f7c7d-489e-4ca0-bfb1-a481ad6dea6c": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "9c873038-a1da-4f08-8847-3f074c60eddc",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "c2862023-2e28-4d47-8d6e-a05920d1eccb": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f087eaf3-5ac6-4786-bfaf-66b4c4900631",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "96f59def-e7f7-4ff5-a90a-9311119dc7d8": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "3a8c72c7-9661-4831-be88-6797b5061ed8",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "4f58ef57-7722-4801-a714-7ca12be7b240": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e8741558-5c49-459f-902d-5abca83db73c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "dddc8306-5d08-4677-af6c-8bd1fd109331": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 25 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "d0d365f9-7181-4332-89e2-97c49d39efab",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 25 days."
+      }
+    ]
+  },
+  "3d035677-e46f-42cf-adc0-ac898dc2f99a": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 25 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "48709721-38a8-47c4-b9cb-ba6534bbd4c5",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 25 days."
+      }
+    ]
+  },
+  "dd06c784-3d7a-427b-a756-a6733acea66f": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "883e0a11-7f4f-49a9-82aa-f6a469629b73",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "315a2dbc-0ac4-4f95-b924-fc3bf0bfa468": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1cf32682-055b-4f0c-ab9d-17243c1ce40b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "09f64c55-1d3b-48d6-af91-81698571c6d0": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "df15a3e1-8fa9-401d-ad2e-055c7f40a760",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "ca1dcd13-e287-4427-9fb2-8a1c64eca313": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "d436da7a-2599-4729-a185-c278b77fca3b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "3fe2a994-55ff-46a6-b1de-255d4c9515d9": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "abb1905d-d3c4-4d5a-858d-715536c36b20",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "f860e36d-e833-43ca-bc8d-2d1d159302a0": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e78aa09f-7847-40b6-bbf8-06adf29d0c8e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "dbc65d85-1520-4e06-8250-9e77650b91b2": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "9ca2bc19-752e-4134-9ac3-242395a8f470",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "470e4f61-2006-4aa0-999f-aec054afcfc3": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "d4d3b810-98c4-4db7-a7ad-5c214af2efd7",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "759074d1-b735-4600-810d-4e20388721b1": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "ec0b4235-3cfe-4108-8326-156762aac845",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "3a7aac87-2972-465b-8aac-285e3afe8bfb": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "38f0bd89-0092-4e39-ab6e-67bce92ca5e9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "8bda9b9b-b181-49b6-b35f-353e4d9fc883": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "a8a1cef8-d1ce-4389-b6d2-5b930d1718d0",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "d9c6373b-4dab-4a21-9871-3b4414900083": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "19506858-b5da-4965-b6fc-0f66157b7fe4",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "79e88f10-91d7-41fe-97eb-22ff480d2884": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "48461a15-ad1b-4153-ba84-13f966f3911f",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "692da031-4194-4a2a-b515-09ac70e15045": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "afcbd049-86b2-4495-b580-d5a818fe0aff",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "ddff302e-ec92-4c09-9e06-c08558e76596": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "14066d26-875d-4165-b57d-3d7f98838bb7",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "ad60af3d-da20-4731-a79b-643d818b4c19": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "46122839-0ba9-4747-ab01-2917861bb85b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "77773c40-918f-4920-b339-316d8b2c0757": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "519ade1d-2623-4807-9c6d-d8c2f4e98d03",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "f35c9770-14d0-4310-87b0-f1e8ae328909": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "5d4b9714-e10d-4853-904a-5e5187af5746",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "20adadca-46c7-4ac2-b353-a9dbad183a23": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "434e1276-24d8-41d0-8177-3f2c0893ad6a",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "592a5d12-3b1c-4acb-81e0-50abe39ecaa5": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "83e462d1-ea51-4abd-9cf9-315c80794be2",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "5a26ef18-534f-48f3-87d9-c6a51453c62e": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "23931c3b-0936-484f-8fd2-c3aa108ce74f",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "db86ed05-cac2-4f03-b628-fe22670abdd7": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "093f4662-0c36-43b9-a170-1f2c8ab99b9c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "674b5448-f87d-4242-9953-2e7ea4b48f33": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "dd636083-3452-483d-bfb8-7988c2b7f9a9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "e6fac3a2-98c7-4a6d-853d-6d40b250a424": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "da907b1e-3800-44f9-9fd2-29dcc0a4d6aa",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "0bf8d04c-9ba4-4633-a790-b9de46e33384": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "7c5feb4e-504d-4c01-b5ed-36f4613d0f27",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "e82c9b1b-5ea1-4d6c-be06-86d33dbdf7a0": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "fd5e0151-817d-4f9b-992e-3f4f5176f043",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "6e7e206d-c6c6-4857-aa3b-d773e146ecbb": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "ee603a4e-7a2c-426b-ab73-52813b5e831c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "51524ce2-9e30-456e-b902-429a19f60ce3": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "bdb7a0fc-52e1-4391-9a7f-aa335549e129",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "655f7a80-dcfa-4fbe-ada9-88f98c74af06": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 25 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "d43118e2-8e67-418e-8ab0-e23874983eb0",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 25 days."
+      }
+    ]
+  },
+  "2be807f3-fa2d-4bf9-a70e-d9c07eba9607": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "597b9e92-49c7-4c8e-a065-34a6f8515678",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "f1334428-cc16-414b-87c6-d053fc2e1acc": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "3508f1b0-61a5-40e7-b2cc-fe31319804c9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "a001e0c6-3043-4c7e-93ab-a71394abcdb5": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "a0ceef00-19b4-48d9-85ab-08035161da38",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "69760513-7215-4c51-877c-ee10cf0865d4": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "86293989-9beb-47ac-9041-0ee107741fb9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "421ef201-622b-4201-8bd5-2ea49a375ffb": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "3308f73c-e637-4914-a219-a525d1ea158d",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "701ded1f-8712-42d2-907f-c61d8a21b0e1": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "2bb59f3f-18f0-4873-b1ca-096d0951b48e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "a2786f11-cea6-4bfe-9de8-1001b3bc82f2": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "401bbf9c-a72d-46b4-ab4f-bec4f4924c6a",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "b8174da2-c1a8-4c25-89d2-ac4c720d8c10": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "47dbd653-4d9e-4f42-87c7-e0732c1edf25",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "8bba559e-cc79-40fe-86ec-75b32f8d28b6": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "cfd8a0c5-2d4c-4da7-9a93-629b69cb957b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "c70302fa-827f-4df6-a90c-50a6282e4964": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1a1f3b12-2ed3-4460-8490-74a7259df552",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "2c332437-060b-4c17-afc6-9186e2685313": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "a930621f-b09b-48e6-9340-a5637bdd301e",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "dc4384fd-fa85-455c-88a1-b39c4f239668": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-18 by 9 day(s).",
+    "severity_reason": "Overdue by 9 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1169d52a-cbdf-4eb1-a4bd-6ae18cad5f8b",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-18 by 9 day(s)."
+      }
+    ]
+  },
+  "06fc7833-6eab-45c9-af78-322520077179": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f1739286-b4e6-475b-8fcf-563c8aca5689",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "61d58733-badf-4d64-bd20-8c67596f34ab": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-22 by 5 day(s).",
+    "severity_reason": "Overdue by 5 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "d3358c1a-e1fa-4524-8f4b-a7524c87ecdc",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-22 by 5 day(s)."
+      }
+    ]
+  },
+  "14c392c8-94d3-48c3-817a-2613285eded3": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 32 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "0f3d5896-99c5-46e4-98bd-777a202cdac0",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 32 days."
+      }
+    ]
+  },
+  "393efd28-22d7-48b3-aea7-bf8029e9c25a": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-08 by 19 day(s).",
+    "severity_reason": "Overdue by 19 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "8baeeae1-02f1-4471-ac51-46b1b370f8cb",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-08 by 19 day(s)."
+      }
+    ]
+  },
+  "9b902503-dd2c-49f4-85ab-9f41b9b91f34": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "c7ca6db6-c092-4a04-951a-0b6babb715bb",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "296c6e3e-4eae-4432-a328-299ad3ca9a75": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "7604fd30-a55c-456f-bdac-2f9d14fc380a",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "b0cc8287-71bd-40cf-9822-8251b82fc77a": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "646b18bf-8458-483c-baf4-e98d2c6d301c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "57ad1086-f400-45e1-a8ab-ab53b90a3af0": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-04 by 23 day(s).",
+    "severity_reason": "Overdue by 23 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "2562589a-dda8-4824-aa23-70248787dca9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-04 by 23 day(s)."
+      }
+    ]
+  },
+  "63daa1db-8760-4123-947f-01bf9c64058b": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 9 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "71cfef90-4eaf-4a39-9bb9-8f6c4154bea9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 9 days."
+      }
+    ]
+  },
+  "66b07131-c1cc-48f1-84d8-10f93cca1c0f": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-01 by 26 day(s).",
+    "severity_reason": "Overdue by 26 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "ad8934d3-4dca-4da8-a3d8-ee99a3ea724a",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-01 by 26 day(s)."
+      }
+    ]
+  },
+  "f912dd87-65d7-47bb-9d0a-4012d58b9699": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "55e42005-068e-421d-8dc0-31d9cb58f750",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "a8bb8f81-0d16-4cc8-ac60-8b9930a4c6f2": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 14 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "cbfd1288-0e7e-401b-8692-af308e287322",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 14 days."
+      }
+    ]
+  },
+  "05b194e6-7c43-4f3e-a9f8-f4b5a543d069": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 40 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "e6802945-e1d3-414e-8d9f-476fa9a2a044",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 40 days."
+      }
+    ]
+  },
+  "449fe4b3-3773-4f56-97ec-fc90cce63d2c": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-29 by 28 day(s).",
+    "severity_reason": "Overdue by 28 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "98d9eb8b-c74f-4776-ab0d-5a7c86f302bd",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-29 by 28 day(s)."
+      }
+    ]
+  },
+  "dd60d795-fc4a-4a4a-aa93-00a9d26929a3": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-23 by 4 day(s).",
+    "severity_reason": "Overdue by 4 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "b7cfcf95-72e5-4a23-975d-4f1e30cfa4fa",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-23 by 4 day(s)."
+      }
+    ]
+  },
+  "ea954728-b540-40b3-ba8d-6e1f3dd86ea2": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-09-28 by 29 day(s).",
+    "severity_reason": "Overdue by 29 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1a3358f7-a759-446c-bf2b-fd66c731f998",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-09-28 by 29 day(s)."
+      }
+    ]
+  },
+  "adf66529-9a30-4c98-80c9-a6233764dc08": {
+    "detection_rule": "IN_PROGRESS >= 3 days",
+    "detection_reason": "Task remained in IN_PROGRESS state for 9 days.",
+    "severity_reason": "Exceeded 3-day standard execution threshold without progress update.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "55f9e5af-7071-43cf-a947-5434c559a3de",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task remained in IN_PROGRESS state for 9 days."
+      }
+    ]
+  },
+  "c8794888-c7f8-48ce-a42d-78699863ba6b": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-23 by 4 day(s).",
+    "severity_reason": "Overdue by 4 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "dab5d1f2-110f-4953-9cbd-d8577bf8d7ad",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-23 by 4 day(s)."
+      }
+    ]
+  },
+  "e8bbfe10-0a6c-4b70-ac85-5086a6973a13": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-26 by 1 day(s).",
+    "severity_reason": "Overdue by 1 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f4c2c8e8-c80d-4159-a879-ec8728ef7b9f",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-26 by 1 day(s)."
+      }
+    ]
+  },
+  "0ca3d057-1d60-4a18-bc5a-fcca33aac002": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 10 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "60442086-99cb-4f53-8304-b4f37afbe14d",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task has been waiting in review queue for 10 days."
+      }
+    ]
+  },
+  "c986846e-00df-4468-b749-fada9b4fe3d9": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-19 by 8 day(s).",
+    "severity_reason": "Overdue by 8 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "4899e49a-641e-4f6a-99f2-6af888392fd9",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-19 by 8 day(s)."
+      }
+    ]
+  },
+  "77d7e90c-21a7-4a07-b557-3e70f32043f8": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-26 by 1 day(s).",
+    "severity_reason": "Overdue by 1 days (High priority deadline breach)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "78643077-1c50-4484-9d4f-ebc228bad767",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-26 by 1 day(s)."
+      }
+    ]
+  },
+  "74cd3613-e240-44cd-944c-128351e38cf2": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-15 by 12 day(s).",
+    "severity_reason": "Overdue by 12 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "cf2215bc-e333-4c76-be97-e1df6e0cdbcc",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-15 by 12 day(s)."
+      }
+    ]
+  },
+  "9dba6371-b9fe-4805-ab2f-dead98e7bdbf": {
+    "detection_rule": "due_date < current_timestamp AND status != COMPLETED",
+    "detection_reason": "Task missed deadline of 2026-10-17 by 10 day(s).",
+    "severity_reason": "Overdue by 10 days (Critical threshold >= 7 days)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "7391c0d8-1b39-42f0-a468-fa4f39e52c69",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Task missed deadline of 2026-10-17 by 10 day(s)."
+      }
+    ]
+  },
+  "4eba5876-7949-424e-bd52-e69c269ea173": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 10 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "1591cbe6-3b65-4e35-a990-326421e3fbb0",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 10 simultaneous active tasks."
+      }
+    ]
+  },
+  "68c195a1-0cd1-4d62-9bbd-60aacaf1937b": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 8 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "de011a82-23cf-4c06-8686-989f17a24cce",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 8 simultaneous active tasks."
+      }
+    ]
+  },
+  "f58dbc9c-4239-4535-b160-54439000af60": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 8 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "ecfb29c0-44ad-495f-9e05-4fd3fc8a2d5c",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 8 simultaneous active tasks."
+      }
+    ]
+  },
+  "a713e68f-2d01-495e-a07d-3904c1374d6e": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 9 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "acfa13e6-cea7-4613-bc0d-d73d68292a20",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 9 simultaneous active tasks."
+      }
+    ]
+  },
+  "d58fc8d7-efe7-4c8f-816f-11ffed04bd43": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 10 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "09a3b40f-20ed-4ff5-bc3e-b379bdebcf5d",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 10 simultaneous active tasks."
+      }
+    ]
+  },
+  "389a3da9-fd98-4af4-aadb-3365961846e4": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 9 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "adf07824-b388-47db-8279-30739eccdb32",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 9 simultaneous active tasks."
+      }
+    ]
+  },
+  "6ff78365-b235-4ee3-ace5-14eef8fa040d": {
+    "detection_rule": "active_tasks > 5",
+    "detection_reason": "Developer is currently handling 16 simultaneous active tasks.",
+    "severity_reason": "Active workload exceeds safety benchmark of 5 concurrent tasks.",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "17eceff6-e419-4a7d-8e55-c0cb4ad6f7bc",
+        "timestamp": "2026-10-27T08:48:37.650842+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Developer is currently handling 16 simultaneous active tasks."
+      }
+    ]
+  },
+  "4ce3ad12-d704-41b4-b48c-17ee0237fb50": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "84c9964b-6a77-454b-9517-77a306ca2561",
+        "timestamp": "2026-10-27T14:39:06.842428+00:00"
+      }
+    ]
+  },
+  "20bd71d5-2511-4579-9fe8-b82471429cbc": {
+    "resolution_notes": "Automatically resolved: underlying condition cleared.",
+    "action_status": "COMPLETED",
+    "history": [
+      {
+        "action": "AUTO_RESOLVED",
+        "user_name": "System Verifier",
+        "details": "Underlying condition cleared and verified by detection engine.",
+        "id": "27ecd8bb-0b30-41ca-8834-c5a72a8ed30a",
+        "timestamp": "2026-10-27T14:39:07.416305+00:00"
+      }
+    ]
+  },
+  "9fde980d-6d7e-42bb-9fe4-35ef0e8b75a2": {
+    "detection_rule": "end_date < current_timestamp AND progress < 100",
+    "detection_reason": "Project passed schedule target of 2026-09-30 with progress at 20%.",
+    "severity_reason": "Project deadline breached with critical backlog (progress 20% < 50%)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "ff56b371-dff6-4ef3-b806-a08a9f37e487",
+        "timestamp": "2026-10-27T14:39:08.549687+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Project passed schedule target of 2026-09-30 with progress at 20%."
+      }
+    ]
+  },
+  "a53a2ae2-1336-48f9-b7ef-5f7ea2955b1a": {
+    "detection_rule": "end_date < current_timestamp AND progress < 100",
+    "detection_reason": "Project passed schedule target of 2026-09-30 with progress at 0%.",
+    "severity_reason": "Project deadline breached with critical backlog (progress 0% < 50%)",
+    "is_recurring": true,
+    "recurrence_count": 1,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "f3fe1ccb-de3f-45ad-99e9-fabb473a4a10",
+        "timestamp": "2026-10-27T14:39:08.549687+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "REOPENED_RECURRING",
+        "details": "Recurring risk detected (occurrence #2): Project passed schedule target of 2026-09-30 with progress at 0%."
+      }
+    ]
+  },
+  "0b8bdcda-a6d9-4409-a055-bfdb0a812a44": {
+    "detection_rule": "REVIEW >= 2 days",
+    "detection_reason": "Task has been waiting in review queue for 10 days.",
+    "severity_reason": "Review cycle exceeded 2-day turnaround threshold.",
+    "is_recurring": false,
+    "recurrence_count": 0,
+    "action_status": "NOT_STARTED",
+    "is_escalated": false,
+    "comments": [],
+    "history": [
+      {
+        "id": "2a901cc5-7c35-41be-84dd-36aafd7defc9",
+        "timestamp": "2026-10-27T15:25:23.801071+00:00",
+        "user_id": null,
+        "user_name": "System Detection",
+        "action": "DETECTED",
+        "details": "Risk auto-detected: Task has been waiting in review queue for 10 days."
       }
     ]
   }

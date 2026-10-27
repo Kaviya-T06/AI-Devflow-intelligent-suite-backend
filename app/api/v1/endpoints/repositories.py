@@ -1,6 +1,5 @@
 """
-Repositories router — real database queries.
-Returns empty list until repositories table is created.
+Repositories router — real database queries against project_github_repositories.
 """
 from typing import List
 
@@ -19,24 +18,22 @@ def _db():
 @router.get("", response_model=List[RepositoryOut], summary="List connected repositories")
 async def list_repositories() -> List[RepositoryOut]:
     """
-    Retrieve all connected repositories from the database.
-    Returns empty list until the repositories table is created.
+    Retrieve all connected GitHub repositories from the project_github_repositories table.
+    Maps DB columns to the frontend Repository type: repository_name, repository_url,
+    provider (always 'GitHub'), status (always 'Active'), connected_at.
     """
     try:
-        resp = _db().table("repositories").select("*").execute()
+        resp = _db().table("project_github_repositories").select("*").execute()
         rows = resp.data or []
         return [
             RepositoryOut(
                 id=r["id"],
-                name=r.get("name", ""),
-                full_name=r.get("full_name", ""),
-                description=r.get("description"),
-                url=r.get("url", ""),
-                language=r.get("language"),
-                stars=r.get("stars", 0),
-                open_issues=r.get("open_issues", 0),
-                last_pushed_at=r.get("last_pushed_at"),
                 project_id=r.get("project_id"),
+                repository_name=r.get("repository_name", ""),
+                repository_url=r.get("html_url", ""),
+                provider="GitHub",
+                status="Active",
+                connected_at=r.get("created_at"),
             )
             for r in rows
         ]

@@ -54,16 +54,17 @@ from app.schemas.workflow_risk import (
 # ---------------------------------------------------------------------------
 
 class RepositoryOut(BaseModel):
+    """
+    Response schema for connected repositories.
+    Maps fields from `project_github_repositories` to the frontend Repository type.
+    """
     id: str
-    name: str
-    full_name: str
-    description: Optional[str] = None
-    url: str
-    language: Optional[str] = None
-    stars: int = 0
-    open_issues: int = 0
-    last_pushed_at: Optional[str] = None
     project_id: Optional[str] = None
+    repository_name: str
+    repository_url: str
+    provider: str = "GitHub"
+    status: str = "Active"
+    connected_at: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

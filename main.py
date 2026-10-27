@@ -3,12 +3,14 @@ AI DevFlow Intelligence Suite — Backend Application
 Main FastAPI application entry point.
 """
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.v1.router import api_router
+from app.db.supabase_client import is_windows_nonblocking_socket_error
 
 # ---------------------------------------------------------------------------
 # Application factory
@@ -78,6 +80,19 @@ def create_application() -> FastAPI:
             status_code=503,
             content={"detail": "Unable to connect to database or remote service (DNS/network connection error). Please verify your internet connection."}
         )
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler_with_socket_fallback(
+        request: Request,
+        exc: HTTPException,
+    ):
+        if is_windows_nonblocking_socket_error(exc):
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Database temporarily unavailable. Please try again."},
+                headers={"Retry-After": "1"},
+            )
+        return await http_exception_handler(request, exc)
 
     # ------------------------------------------------------------------
     # Route registration
